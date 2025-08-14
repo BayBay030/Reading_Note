@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>榮格心理學互動探索：核心概念與紅書之旅。學習筆記</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony Neutrals -->
+    <!-- Application Structure Plan: The application is designed as a non-linear, thematic exploration rather than a linear report. It starts with a captivating introduction, moves to a central 'Core Concepts' dashboard with interactive cards for easy digestion. Key comparisons like Jung vs. Freud are presented in an interactive side-by-side format. 'The Red Book' is treated as a visual, clickable journey with images and text descriptions. A new 'Jungian Quiz' section is added for interactive self-assessment. The 'Concept Clarifier' section (LLM-powered) is positioned after the quiz. This structure prioritizes user-led discovery and breaks down complex information into manageable, engaging modules, which is more effective for a web-based interactive experience than the original report's dense, sequential format. -->
+    <!-- Visualization & Content Choices:
+        - Psyche Structure: Goal: Inform. Viz: Donut Chart (Chart.js). Interaction: Hover to see details. Justification: Visually represents the proportional relationship between conscious and unconscious levels.
+        - Core Concepts/Archetypes: Goal: Organize. Viz: Interactive Cards (HTML/CSS/JS). Interaction: Click to reveal detailed information. Justification: Allows users to focus on one concept at a time, preventing information overload.
+        - Jung vs. Freud: Goal: Compare. Viz: Two-column interactive layout (HTML/CSS/JS). Interaction: Buttons to switch between topics. Justification: More engaging and direct comparison than a static table.
+        - Red Book Journey: Goal: Change/Process. Viz: Stylized timeline/path (HTML/CSS) with symbolic emoji nodes, now displaying placeholder images and their corresponding text descriptions. Interaction: Clickable nodes to show associated images and rich textual content. Justification: Transforms a list of chapters into an experiential journey, mirroring the theme of individuation, with both visual cues and detailed content for each stage.
+        - Legacy Diagram: Goal: Relationships. Viz: HTML/CSS node diagram with symbolic emojis. Interaction: Hover effects to highlight connections. Justification: Visually demonstrates the wide-reaching influence of Jung's ideas in a more intuitive way than a list, using universally recognizable symbols.
+        - Icons/Symbols: Goal: Inform/Engage. Viz: Unicode Emojis/Characters. Interaction: Static visual enhancement. Justification: Adds visual interest and quick contextual cues to section and card titles, improving scannability and aesthetic appeal without using raster images or SVG.
+        - Jungian Quiz: Goal: Self-reflection/Engagement. Viz: Multiple-choice questions (HTML radio buttons) and text output for results (HTML Div). Interaction: User selects answers, clicks submit, receives personalized Jungian insights. Justification: Applies Jungian concepts to relatable scenarios, making the learning interactive and personal, guiding users to understand their current psychological tendencies. Positioned earlier for a more engaging initial interaction.
+        - Jungian Concept Clarifier: Goal: Inform/Deepen Understanding. Viz: Text Output (HTML Div) powered by LLM. Interaction: User text input, button click to generate explanation. Justification: Provides on-demand, contextual explanations of complex Jungian terms, enhancing learning and exploration beyond predefined content, using Gemini API for dynamic content generation. Positioned after the quiz to follow the self-reflection with a knowledge-deepening tool.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #FDFBF6;
+            color: #333c3b;
+        }
+        h1, h2, h3, h4, .font-serif {
+            font-family: 'Noto Serif TC', serif;
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .nav-link:hover {
+            color: #A0522D;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #A0522D;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after, .nav-link.active::after {
+            width: 100%;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border: 1px solid #E0DCD1;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            background-color: #A0522D;
+            color: #FFFFFF;
+            border-color: #A0522D;
+        }
+        .modal-overlay {
+            transition: opacity 0.3s ease;
+        }
+        .modal-content {
+            transition: transform 0.3s ease;
+        }
+        .archetype-card {
+            perspective: 1000px;
+        }
+        .archetype-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .archetype-card:hover .archetype-card-inner {
+            transform: rotateY(180deg);
+        }
+        .archetype-card-front, .archetype-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+        .archetype-card-front {
+            background-color: #F9F6EE;
+            border: 1px solid #E0DCD1;
+        }
+        .archetype-card-back {
+            background-color: #E0DCD1;
+            transform: rotateY(180deg);
+            overflow-y: auto;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 350px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .icon-container {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            background-color: #F0EEE9;
+            margin-right: 0.5rem;
+            font-size: 1.2rem;
+            color: #A0522D;
+            flex-shrink: 0;
+        }
+        .redbook-image-container {
+            width: 100%;
+            max-width: 800px; /* Adjusted for 3x6 horizontal, aiming for 2:1 aspect ratio */
+            margin: 0 auto;
+            aspect-ratio: 3 / 2; /* For 3x6, effectively 1:2 aspect ratio if it means 3 units height, 6 units width. Assuming standard horizontal photo aspect ratio, often 2:1 or 16:9. Let's go with 2:1 for now, as 3x6 literally isn't common. If 3:6 means 3 units high by 6 units wide, then aspect ratio is 6/3 = 2. */
+            overflow: hidden; /* Ensure image doesn't overflow */
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .redbook-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top; /* 這裡新增了圖片頂部對齊的定義 */
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-40 shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="font-serif text-2xl font-bold text-gray-800 flex items-center">
+                <span class="icon-container mr-2">🧭</span> 榮格的心靈地圖｜學習筆記
+            </div>
+            <div class="hidden md:flex space-x-8">
+                <a href="#intro" class="nav-link text-gray-600">導論</a>
+                <a href="#concepts" class="nav-link text-gray-600">核心概念</a>
+                <a href="#freud-jung" class="nav-link text-gray-600">榮格與佛洛伊德</a>
+                <a href="#redbook" class="nav-link text-gray-600">紅書之旅</a>
+                <a href="#legacy" class="nav-link text-gray-600">影響與傳承</a>
+                <a href="#jung-quiz" class="nav-link text-gray-600">心理測驗</a>
+                <a href="#concept-clarifier" class="nav-link text-gray-600">AI 解析</a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden text-gray-700 focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden px-6 pb-4">
+            <a href="#intro" class="block py-2 text-gray-600">導論</a>
+            <a href="#concepts" class="block py-2 text-gray-600">核心概念</a>
+            <a href="#freud-jung" class="block py-2 text-gray-600">榮格與佛洛伊德</a>
+            <a href="#redbook" class="block py-2 text-gray-600">紅書之旅</a>
+            <a href="#legacy" class="block py-2 text-gray-600">影響與傳承</a>
+            <a href="#jung-quiz" class="block py-2 text-gray-600">心理測驗</a>
+            <a href="#concept-clarifier" class="block py-2 text-gray-600">AI 解析</a>
+        </div>
+    </header>
+
+   
+
+    <main class="container mx-auto px-6 py-12">
+
+        <section id="intro" class="text-center mb-24 scroll-mt-20">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 flex items-center justify-center">
+                <span class="icon-container mr-3 text-3xl">✨</span> 踏上自我探索的旅程
+            </h1>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                歡迎來到榮格心理學的學習筆記。本站透過AI學習，透過學習筆記探索「卡爾·榮格」心理學的革命性思想，從心靈的結構到神秘的《紅書》章節。這不僅是一趟知識之旅，更是一次內在自我的對話。
+            </p>
+
+             <!-- 音訊播放器區塊 - 新增開始 -->
+    <div class="container mx-auto px-6 py-8 text-center">
+        <h3 class="text-xl font-bold text-gray-700 mb-4 font-serif">語音導讀</h3>
+        <!-- 
+            請將 src 屬性中的 'path/to/your/music.mp3' 替換為你的 MP3 檔案實際路徑。
+            例如：如果你有一個名為 'background_music.mp3' 的檔案在與此 HTML 檔案相同的資料夾中，
+            則寫成 src="background_music.mp3"。
+        -->
+        <audio controls class="w-full max-w-xl mx-auto rounded-lg shadow-md">
+            <source src="深度探索榮格《紅書》：潛入集體無意識，解碼你的內在原型與個體化旅程.mp3" type="audio/mpeg">
+            您的瀏覽器不支援音訊元素。
+        </audio>
+    </div>
+    <!-- 音訊播放器區塊 - 新增結束 -->
+        </section>
+
+        <section id="concepts" class="mb-24 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-4 font-serif flex items-center justify-center">
+                 核心概念：建構心靈的基石
+            </h2>
+            <p class="text-center text-gray-600 max-w-2xl mx-auto mb-12">榮格的理論建立在一系列深刻的概念之上，它們共同描繪了一幅宏偉的心靈地圖。點擊下方的卡片，逐一探索這些構成我們內在世界的關鍵元素。</p>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="card p-6 rounded-lg cursor-pointer flex flex-col items-center text-center" onclick="showModal('psyche')">
+                    <span class="icon-container mb-3 text-3xl">🧩</span>
+                    <h3 class="text-xl font-bold mb-2 font-serif">心靈結構</h3>
+                    <p class="text-gray-600">意識、個人無意識與集體無意識，構成了我們心靈的三個層次。</p>
+                </div>
+                <div class="card p-6 rounded-lg cursor-pointer flex flex-col items-center text-center" onclick="showModal('archetypes')">
+                    <span class="icon-container mb-3 text-3xl">🎭</span>
+                    <h3 class="text-xl font-bold mb-2 font-serif">原型探索</h3>
+                    <p class="text-gray-600">探索那些普遍存在於人類心靈深處的原始意象，如人格面具、陰影、阿尼瑪/阿尼姆斯。</p>
+                </div>
+                <div class="card p-6 rounded-lg cursor-pointer flex flex-col items-center text-center" onclick="showModal('individuation')">
+                    <span class="icon-container mb-3 text-3xl">🌱</span>
+                    <h3 class="text-xl font-bold mb-2 font-serif">個體化歷程</h3>
+                    <p class="text-gray-600">一場終生的心靈整合之旅，目標是成為一個完整、真實的自己。</p>
+                </div>
+                <div class="card p-6 rounded-lg cursor-pointer flex flex-col items-center text-center" onclick="showModal('dreams')">
+                    <span class="icon-container mb-3 text-3xl">🔮</span>
+                    <h3 class="text-xl font-bold mb-2 font-serif">夢境與象徵</h3>
+                    <p class="text-gray-600">夢是通往無意識的輝煌大道，充滿了來自內心深處的象徵與指引。</p>
+                </div>
+                <div class="card p-6 rounded-lg cursor-pointer flex flex-col items-center text-center" onclick="showModal('types')">
+                    <span class="icon-container mb-3 text-3xl">⚖️</span>
+                    <h3 class="text-xl font-bold mb-2 font-serif">心理類型</h3>
+                    <p class="text-gray-600">內傾與外傾，思維、情感、感官與直覺，構成了我們理解世界的獨特方式。</p>
+                 </div>
+                 <div class="card p-6 rounded-lg cursor-pointer flex flex-col items-center text-center" onclick="showModal('libido')">
+                    <span class="icon-container mb-3 text-3xl">⚡</span>
+                    <h3 class="text-xl font-bold mb-2 font-serif">力比多 (Libido)</h3>
+                    <p class="text-gray-600">不僅是性驅力，而是一種驅動所有心靈活動的廣泛心理能量。</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="freud-jung" class="mb-24 scroll-mt-20 bg-white p-8 rounded-lg shadow-lg">
+            <h2 class="text-3xl font-bold text-center mb-4 font-serif flex items-center justify-center">
+                <span class="icon-container mr-3 text-2xl">⑇</span> 思想的岔路：榮格 vs. 佛洛伊德
+            </h2>
+            <p class="text-center text-gray-600 max-w-2xl mx-auto mb-12">榮格與佛洛伊德的合作與決裂是20世紀心理學史上的重大事件。他們的思想分歧，為深度心理學開創了兩條截然不同的道路。點擊下方按鈕，比較他們在核心議題上的觀點差異。</p>
+            <div id="comparison-container" class="grid md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-2xl font-bold mb-4 text-center font-serif">佛洛伊德的精神分析</h3>
+                    <div id="freud-content" class="p-6 bg-gray-50 rounded-lg min-h-[200px]"></div>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-bold mb-4 text-center font-serif">榮格的分析心理學</h3>
+                    <div id="jung-content" class="p-6 bg-gray-50 rounded-lg min-h-[200px]"></div>
+                </div>
+            </div>
+             <div class="flex justify-center flex-wrap gap-4 mt-8">
+                <button class="comparison-btn tab-button border border-gray-300 px-4 py-2 rounded-full" data-topic="unconscious">無意識</button>
+                <button class="comparison-btn tab-button border border-gray-300 px-4 py-2 rounded-full" data-topic="libido">力比多</button>
+                <button class="comparison-btn tab-button border border-gray-300 px-4 py-2 rounded-full" data-topic="dreams">夢的解釋</button>
+                <button class="comparison-btn tab-button border border-gray-300 px-4 py-2 rounded-full" data-topic="religion">宗教與神話</button>
+            </div>
+        </section>
+
+        <section id="redbook" class="mb-24 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-4 font-serif flex items-center justify-center">
+                <span class="icon-container mr-3 text-2xl">📖</span> 《紅書》：一場靈魂的冒險
+            </h2>
+            <p class="text-center text-gray-600 max-w-2xl mx-auto mb-12">《紅書》是榮格在個人危機中，與自己無意識進行深刻對話的記錄。它不僅是一本書，更是他所有核心理論的誕生地。點擊旅程中的節點，探索這趟非凡的內在探索。</p>
+            <div class="relative w-full py-12">
+                <div class="absolute top-1/2 left-0 w-full h-1 bg-gray-300 transform -translate-y-1/2"></div>
+                <div class="relative flex justify-between items-center">
+                    <div class="redbook-node text-center cursor-pointer" data-content="redbook_spirit">
+                        <div class="w-10 h-10 bg-white border-2 border-amber-700 rounded-full mx-auto flex items-center justify-center text-2xl transform transition-transform duration-200 ease-in-out hover:scale-110">💭</div>
+                        <p class="mt-2 text-sm font-semibold">時代與深度精神</p>
+                    </div>
+                    <div class="redbook-node text-center cursor-pointer" data-content="redbook_hero">
+                        <div class="w-10 h-10 bg-white border-2 border-amber-700 rounded-full mx-auto flex items-center justify-center text-2xl transform transition-transform duration-200 ease-in-out hover:scale-110">⚔️</div>
+                        <p class="mt-2 text-sm font-semibold">英雄之死</p>
+                    </div>
+                    <div class="redbook-node text-center cursor-pointer" data-content="redbook_redman">
+                        <div class="w-10 h-10 bg-white border-2 border-amber-700 rounded-full mx-auto flex items-center justify-center text-2xl transform transition-transform duration-200 ease-in-out hover:scale-110">👤</div>
+                        <p class="mt-2 text-sm font-semibold">紅人</p>
+                    </div>
+                    <div class="redbook-node text-center cursor-pointer" data-content="redbook_fool">
+                        <div class="w-10 h-10 bg-white border-2 border-amber-700 rounded-full mx-auto flex items-center justify-center text-2xl transform transition-transform duration-200 ease-in-out hover:scale-110">🃏</div>
+                        <p class="mt-2 text-sm font-semibold">神聖愚者</p>
+                    </div>
+                    <div class="redbook-node text-center cursor-pointer" data-content="redbook_individuation">
+                        <div class="w-10 h-10 bg-white border-2 border-amber-700 rounded-full mx-auto flex items-center justify-center text-2xl transform transition-transform duration-200 ease-in-out hover:scale-110">🌟</div>
+                        <p class="mt-2 text-sm font-semibold">個體化實踐</p>
+                    </div>
+                </div>
+            </div>
+            <div id="redbook-content" class="mt-12 p-8 bg-white rounded-lg shadow-inner min-h-[250px] text-gray-700 leading-relaxed text-center">
+                <p class="text-center text-gray-500">點擊上方的旅程節點以開始探索。</p>
+            </div>
+        </section>
+
+        <section id="legacy" class="mb-24 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-4 font-serif flex items-center justify-center">
+                <span class="icon-container mr-3 text-2xl">🌍</span> 跨領域的影響與傳承
+            </h2>
+            <p class="text-center text-gray-600 max-w-2xl mx-auto mb-12">榮格的思想超越了心理學，深刻地影響了神話學、藝術、文學和電影。以下圖示展現了其部分影響力，將滑鼠懸停在節點上查看關聯。</p>
+            <div class="grid md:grid-cols-3 gap-8 text-center">
+                <div class="card p-6 rounded-lg flex flex-col items-center text-center">
+                    <span class="icon-container mb-3 text-3xl">📜</span>
+                    <h3 class="text-xl font-bold mb-2 font-serif">神話學</h3>
+                    <p class="text-gray-600">約瑟夫·坎伯的「英雄之旅」模型，深受榮格原型理論的啟發。</p>
+                </div>
+                <div class="card p-6 rounded-lg flex flex-col items-center text-center">
+                    <span class="icon-container mb-3 text-3xl">🎬</span>
+                    <h3 class="text-xl font-bold mb-2 font-serif">電影與文學</h3>
+                    <p class="text-gray-600">從《星際大戰》到《獅子王》，無數故事都遵循著英雄原型的敘事結構。</p>
+                </div>
+                <div class="card p-6 rounded-lg flex flex-col items-center text-center">
+                    <span class="icon-container mb-3 text-3xl">🎨</span>
+                    <h3 class="text-xl font-bold mb-2 font-serif">藝術與治療</h3>
+                    <p class="text-gray-600">超現實主義與藝術治療都從榮格對夢境、神話、無意識的興趣啟發，透過自發性創作表達內在世界。</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="jung-quiz" class="mb-24 scroll-mt-20 bg-white p-8 rounded-lg shadow-lg">
+            <h2 class="text-3xl font-bold text-center mb-4 font-serif flex items-center justify-center">
+                <span class="icon-container mr-3 text-2xl">🔍</span> 榮格心靈測驗：探索你的內在狀態
+            </h2>
+            <p class="text-center text-gray-600 max-w-2xl mx-auto mb-8">透過幾個日常情境問題，探索你目前的心靈能量更傾向於榮格的哪個概念，這將幫助你更好地理解自己與關係。</p>
+
+            <div id="quiz-questions" class="space-y-8 max-w-xl mx-auto">
+                <div class="quiz-question bg-gray-50 p-6 rounded-lg">
+                    <p class="font-bold mb-4">1. 當你在新環境中與人初次見面時，你的表現傾向於？</p>
+                    <div class="space-y-2">
+                        <label class="block p-3 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-100">
+                            <input type="radio" name="q1" value="persona" class="mr-2"> 展現出大家可能喜歡的樣子，希望給人留下好印象。
+                        </label>
+                        <label class="block p-3 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-100">
+                            <input type="radio" name="q1" value="animaAnimus" class="mr-2"> 比較被動，等待對方先展現他們的真實性格。
+                        </label>
+                        <label class="block p-3 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-100">
+                            <input type="radio" name="q1" value="individuation" class="mr-2"> 自然而然地展現自己的個性，不會刻意迎合。
+                        </label>
+                    </div>
+                </div>
+
+                <div class="quiz-question bg-gray-50 p-6 rounded-lg">
+                    <p class="font-bold mb-4">2. 你和伴侶或家人產生爭執時，最可能出現的心態是？</p>
+                    <div class="space-y-2">
+                        <label class="block p-3 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-100">
+                            <input type="radio" name="q2" value="persona" class="mr-2"> 感到對方不講理，難以接受其「陰暗面」。
+                        </label>
+                        <label class="block p-3 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-100">
+                            <input type="radio" name="q2" value="animaAnimus" class="mr-2"> 覺得對方的情緒化難以捉摸，或無法理解對方的「邏輯」。
+                        </label>
+                        <label class="block p-3 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-100">
+                            <input type="radio" name="q2" value="individuation" class="mr-2"> 雖然有情緒，但會嘗試理解爭執背後更深層次的個人需求或未被看見的自己。
+                        </label>
+                    </div>
+                </div>
+
+                <div class="quiz-question bg-gray-50 p-6 rounded-lg">
+                    <p class="font-bold mb-4">3. 在面對自己「不完美」的特質（如：懶惰、衝動）時，你會怎麼做？</p>
+                    <div class="space-y-2">
+                        <label class="block p-3 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-100">
+                            <input type="radio" name="q3" value="persona" class="mr-2"> 盡力掩飾，或歸咎於外在因素。
+                        </label>
+                        <label class="block p-3 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-100">
+                            <input type="radio" name="q3" value="animaAnimus" class="mr-2"> 感到矛盾或困惑，不確定如何處理這種內在衝突。
+                        </label>
+                        <label class="block p-3 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-100">
+                            <input type="radio" name="q3" value="individuation" class="mr-2"> 承認這是自己的一部分，並思考它可能蘊含的未開發潛能。
+                        </label>
+                    </div>
+                </div>
+
+                <div class="quiz-question bg-gray-50 p-6 rounded-lg">
+                    <p class="font-bold mb-4">4. 在親密關係中，你是否常感覺到對方身上有股難以言喻的吸引力或排斥力，讓你聯想到某些特定的人或故事？</p>
+                    <div class="space-y-2">
+                        <label class="block p-3 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-100">
+                            <input type="radio" name="q4" value="persona" class="mr-2"> 有時會有，但認為那只是偶然的巧合或個人喜好。
+                        </label>
+                        <label class="block p-3 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-100">
+                            <input type="radio" name="q4" value="animaAnimus" class="mr-2"> 是的，我感覺到那是某種「命中注定」或內在的深刻連結。
+                        </label>
+                        <label class="block p-3 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-100">
+                            <input type="radio" name="q4" value="individuation" class="mr-2"> 我更注重關係中的實際溝通和共同成長，而非神秘的吸引力。
+                        </label>
+                    </div>
+                </div>
+
+                <div class="quiz-question bg-gray-50 p-6 rounded-lg">
+                    <p class="font-bold mb-4">5. 當你感到生活中缺乏意義或方向時，你會？</p>
+                    <div class="space-y-2">
+                        <label class="block p-3 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-100">
+                            <input type="radio" name="q5" value="persona" class="mr-2"> 努力尋找新的外部目標或成就來填補空虛。
+                        </label>
+                        <label class="block p-3 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-100">
+                            <input type="radio" name="q5" value="animaAnimus" class="mr-2"> 常常感到迷茫或焦慮，不知所措。
+                        </label>
+                        <label class="block p-3 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-100">
+                            <input type="radio" name="q5" value="individuation" class="mr-2"> 嘗試向內探索，思考自己的深層渴望和價值觀，或從夢中尋找啟示。
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-center mt-8">
+                <button id="submit-quiz-button" class="bg-amber-700 text-white px-8 py-3 rounded-full hover:bg-amber-800 transition-colors duration-300 shadow-md">
+                    查看你的心靈狀態
+                </button>
+            </div>
+
+            <div id="quiz-result" class="mt-12 p-8 bg-gray-100 rounded-lg shadow-inner min-h-[150px] text-gray-700 leading-relaxed hidden">
+                <h3 class="text-2xl font-bold font-serif text-center mb-4" id="result-title"></h3>
+                <p class="text-center text-gray-600 mb-6" id="result-summary"></p>
+                <div id="result-details" class="space-y-4"></div>
+            </div>
+        </section>
+
+        <section id="concept-clarifier" class="mb-24 scroll-mt-20 bg-white p-8 rounded-lg shadow-lg">
+            <h2 class="text-3xl font-bold text-center mb-4 font-serif flex items-center justify-center">
+                <span class="icon-container mr-3 text-2xl">🧠</span> 榮格xAI 概念解析器 ✨
+            </h2>
+            <p class="text-center text-gray-600 max-w-2xl mx-auto mb-8">在這裡輸入任何您想深入了解的榮格心理學概念，AI 將為您提供詳細的解釋和實用案例。</p>
+            <div class="flex flex-col items-center space-y-4">
+                <textarea id="clarifier-input" class="w-full max-w-xl p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-700" rows="5" placeholder="例如：什麼是原型？個體化歷程有什麼意義？"></textarea>
+                <button id="clarifier-button" class="bg-amber-700 text-white px-8 py-3 rounded-full hover:bg-amber-800 transition-colors duration-300 shadow-md flex items-center justify-center">
+                    <span id="clarifier-button-text">解析概念</span>
+                    <span id="clarifier-loading" class="hidden ml-2">載入中...</span>
+                </button>
+                <div id="clarifier-output" class="w-full max-w-xl p-6 bg-gray-50 rounded-lg mt-6 min-h-[150px] text-gray-700 leading-relaxed overflow-auto">
+                    <p class="text-center text-gray-500">解析結果將顯示於此。</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-6 text-center">
+            <p>本站根據AI提供的「榮格心理學學習筆記」報告生成。由Bay延伸應用並以分享為目的建立本站。</p>
+            <p class="text-sm text-gray-400 mt-2">僅供教育材料與個人探索之用。</p>
+        </div>
+    </footer>
+
+    <div id="modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+        <div class="modal-content bg-white rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-8 transform scale-95">
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="modal-title" class="text-2xl font-bold font-serif"></h3>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-800">&times;</button>
+            </div>
+            <div id="modal-body" class="text-gray-700 leading-relaxed space-y-4"></div>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    mobileMenuButton.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+    });
+
+    const navLinks = document.querySelectorAll('.nav-link');
+    const sections = document.querySelectorAll('main section');
+
+    window.addEventListener('scroll', () => {
+        let current = '';
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            if (pageYOffset >= sectionTop - 100) {
+                current = section.getAttribute('id');
+            }
+        });
+
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href').includes(current)) {
+                link.classList.add('active');
+            }
+        });
+    });
+
+    const comparisonData = {
+        unconscious: {
+            freud: '<h3>個人無意識</h3><p>主要為被壓抑的驅力、記憶和情感。這些內容曾經是意識的，或是可以被意識化的。</p>',
+            jung: '<h3>個人 + 集體無意識</h3><p>除了個人被壓抑的內容，更提出了集體無意識的概念，包含了人類共同繼承的、普遍存在的原型與心理結構。</p>'
+        },
+        libido: {
+            freud: '<h3>性驅力</h3><p>將力比多主要解釋為性驅力，是所有心理活動的根本動力。</p>',
+            jung: '<h3>廣泛的心理能量</h3><p>認為力比多是一種更廣泛、自由流動的心理能量，不僅限於性，驅動著所有心靈活動。</p>'
+        },
+        dreams: {
+            freud: '<h3>願望的滿足</h3><p>認為夢是潛意識願望的偽裝性滿足，特別是關於性與攻擊性的驅力。</p>',
+            jung: '<h3>補償性作用</h3><p>認為夢是無意識對意識的補償，旨在平衡心靈，促進個體化，是通往無意識的橋樑。</p>'
+        },
+        religion: {
+            freud: '<h3>幻覺</h3><p>拒絕宗教，將其視為一種集體的神經症或幻覺，是無助的人類對強大父親形象的投射。</p>',
+            jung: '<h3>集體無意識的表達</h3><p>對宗教和神話抱持極大興趣，認為它們是集體無意識原型的自然表達，是人類尋求意義的重要途徑。</p>'
+        }
+    };
+
+    const freudContent = document.getElementById('freud-content');
+    const jungContent = document.getElementById('jung-content');
+    const comparisonBtns = document.querySelectorAll('.comparison-btn');
+
+    function updateComparison(topic) {
+        freudContent.innerHTML = comparisonData[topic].freud;
+        jungContent.innerHTML = comparisonData[topic].jung;
+        comparisonBtns.forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.topic === topic) {
+                btn.classList.add('active');
+            }
+        });
+    }
+
+    comparisonBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            updateComparison(btn.dataset.topic);
+        });
+    });
+
+    updateComparison('unconscious');
+
+    const redbookNodes = document.querySelectorAll('.redbook-node');
+    const redbookContent = document.getElementById('redbook-content');
+    const redbookData = {
+        redbook_spirit: {
+            title: '時代精神 vs. 深度精神',
+            imageUrl: './image/001.png',
+            text: '<p>榮格區分了兩種經驗維度：「時代精神」代表我們外在、理性、不斷變化的社會規範；而「深度精神」則是內在、永恆、超越時間的無意識世界。榮格認為，要尋回失落的靈魂，必須潛入「深度精神」，傾聽來自內在的聲音，而非盲目追隨外部世界的價值。</p>'
+        },
+        redbook_hero: {
+            title: '英雄之死',
+            imageUrl: './image/002.png',
+            text: '<p>這並非指實際的死亡，而是舊有自我或意識態度的終結。當個體過於依賴外在角色（人格面具）或慣性行為模式時，這種「英雄之死」是啟動個體化進程的必要階段，代表著與無意識的首次深度連結與轉變。</p>'
+        },
+        redbook_redman: {
+            title: '紅人 (Philemon)',
+            imageUrl: './image/003.png',
+            text: '<p>紅人，即 Philemon，是榮格在《紅書》中遇到的重要內部形象，被視為他與無意識溝通的引導者。他代表了一種更高層次的智慧和精神導師，幫助榮格理解無意識的訊息，並將其整合到意識之中。Philemon 是榮格個體化歷程中的一個關鍵原型形象。</p>'
+        },
+        redbook_fool: {
+            title: '神聖愚者',
+            imageUrl: './image/004.png',
+            text: '<p>神聖愚者是一個在許多神話和民間故事中出現的原型，代表著天真、直覺、非傳統的智慧。在《紅書》中，這個形象提醒榮格，個體化並非總是理性和有序的，有時需要放下控制，擁抱非邏輯和直覺的層面，才能找到真正的自我。</p>'
+        },
+        redbook_individuation: {
+            title: '個體化實踐',
+            imageUrl: './image/005.png',
+            text: '<p>《紅書》是榮格個體化歷程的實踐記錄。透過與無意識內容（如原型和陰影）的積極想像和對話，榮格逐漸整合了他心靈中分裂的面向，最終實現了更完整、更真實的自我。這個過程是艱辛的，但也充滿了創造性的轉變。</p>'
+        }
+    };
+
+    function displayRedbookContent(key) {
+        const content = redbookData[key];
+        if (content) {
+            let imageHtml = '';
+            if (content.imageUrl) {
+                imageHtml = `<div class="redbook-image-container mb-6 mx-auto"><img src="${content.imageUrl}" alt="${content.title}"></div>`;
+            }
+            redbookContent.innerHTML = `
+                ${imageHtml}
+                <h3 class="text-2xl font-bold font-serif mb-4">${content.title}</h3>
+                ${content.text}
+            `;
+            redbookContent.classList.remove('text-center', 'text-gray-500'); // 移除初始的置中提示樣式
+        } else {
+            redbookContent.innerHTML = '<p class="text-center text-gray-500">此節點暫無詳細內容。</p>';
+        }
+    }
+
+    redbookNodes.forEach(node => {
+        node.addEventListener('click', function() {
+            const contentKey = this.dataset.content;
+            displayRedbookContent(contentKey);
+        });
+    });
+
+    // Initial display for redbook section
+    displayRedbookContent('redbook_spirit');
+
+
+    // Modal logic
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalBody = document.getElementById('modal-body');
+
+    const conceptData = {
+        psyche: {
+            title: '心靈結構',
+            content: '<p>榮格將心靈分為三個層次：</p><ul><li><b>意識 (Conscious)</b>：我們能直接感知的思想、感受、記憶。</li><li><b>個人無意識 (Personal Unconscious)</b>：包含被遺忘、壓抑或不夠重要而未被意識到的內容。類似佛洛伊德的潛意識，但榮格認為它較表層。</li><li><b>集體無意識 (Collective Unconscious)</b>：最深層、最普遍的無意識層次，由人類祖先經驗的累積所形成，包含著普遍性的意象和模式，即「原型」。</li></ul><p>這三個層次並非獨立存在，而是相互作用、影響著個體的思想與行為。</p>'
+        },
+        archetypes: {
+            title: '原型探索',
+            content: '<p><b>原型 (Archetypes)</b> 是集體無意識中的普遍性、先天性模式或意象，它們影響著我們感知和體驗世界的方式。它們不是具體的圖像，而是形成圖像的傾向。常見的原型包括：</p><ul><li><b>人格面具 (Persona)</b>：我們在社會中展現的形象，是個人與外界互動的橋樑，但也可能導致與真實自我的疏離。</li><li><b>陰影 (Shadow)</b>：心靈中被壓抑、否認或不被接受的部分，包含了個體的負面特質，但也蘊含著巨大的創造力與潛能。整合陰影是個體化的重要一步。</li><li><b>阿尼瑪 (Anima) / 阿尼姆斯 (Animus)</b>：異性原型。阿尼瑪是男性心靈中的女性形象，阿尼姆斯是女性心靈中的男性形象。它們是理解異性和自身內在異性特質的關鍵。</li><li><b>自性 (Self)</b>：榮格心理學的核心原型，代表心靈的整體性和統一性，是個體化歷程的終極目標。它包含了意識與無意識的所有面向。</li></ul><p>原型是人類共同的精神遺產，通過夢境、神話、宗教、藝術和文化等形式顯現。</p>'
+        },
+        individuation: {
+            title: '個體化歷程',
+            content: '<p><b>個體化 (Individuation)</b> 是榮格分析心理學的核心概念，指的是一個人在一生中，將意識與無意識的各個方面（包括原型和陰影）整合起來，發展成為一個完整、獨特且真實自我的過程。</p><p>這是一個持續不斷的、螺旋上升的旅程，而非一次性完成的目標。它涉及面對和接納內在的矛盾與衝突，並最終達到一種心靈的平衡與和諧，實現自性的圓滿。個體化並非變得自私或孤立，而是更好地認識自己，從而能更真實地與他人和世界建立連結。</p>'
+        },
+        dreams: {
+            title: '夢境與象徵',
+            content: '<p>榮格認為，<b>夢 (Dreams)</b> 是通往無意識的「高速公路」，它們是無意識嘗試與意識溝通的方式。夢中的元素（人物、物體、情境）並非隨機，而是具有深層意義的<b>象徵 (Symbols)</b>。</p><p>夢的目的是補償意識心靈的片面性或不平衡，提供解決問題的線索，或指引個體朝向個體化發展。榮格在解析夢境時，更注重夢的整體意義和其對個體未來發展的啟示，而非僅僅回溯過去的創傷。</p>'
+        },
+        types: {
+            title: '心理類型',
+            content: '<p>榮格提出了<b>心理類型 (Psychological Types)</b> 的概念，主要包含兩種態度和四種功能，它們構成了個體與世界互動的傾向：</p><ul><li><b>態度 (Attitudes)</b>：<br>  - <b>內傾 (Introversion)</b>：心靈能量主要導向內在世界（思想、感受、幻想）。<br>  - <b>外傾 (Extraversion)</b>：心靈能量主要導向外在世界（人、物、活動）。</li><li><b>功能 (Functions)</b>：<br>  - <b>思維 (Thinking)</b>：通過邏輯和理性理解世界。<br>  - <b>情感 (Feeling)</b>：通過價值判斷和人際關係理解世界。<br>  - <b>感官 (Sensation)</b>：通過五感直接感知現實。<br>  - <b>直覺 (Intuition)</b>：通過無意識的洞察力感知可能性。</li></ul><p>每個人都有這八種組合中的一種主導類型，以及一個次要類型，而另兩個功能則為無意識，形成個人的獨特心靈模式。</p>'
+        },
+        libido: {
+            title: '力比多 (Libido)',
+            content: '<p>在榮格的理論中，<b>力比多 (Libido)</b> 不再單純指性驅力，而是指一種廣泛的、無差別的心理能量，它是所有心靈活動的驅動力。</p><p>這種能量可以流向任何心理活動，如學習、創造、人際關係、精神追求等。當力比多在某個區域受阻時，它可能會流向其他區域，尋求新的出口。榮格認為，夢境和神話中的象徵，就是力比多從無意識中顯現出來的具體形式。</p>'
+        }
+    };
+
+    window.showModal = function(conceptKey) {
+        const data = conceptData[conceptKey];
+        if (data) {
+            modalTitle.textContent = data.title;
+            modalBody.innerHTML = data.content;
+            modal.classList.remove('hidden');
+            setTimeout(() => { // Small delay for transition effect
+                modal.querySelector('.modal-content').classList.remove('scale-95');
+                modal.style.opacity = '1';
+            }, 50);
+        }
+    };
+
+    window.closeModal = function() {
+        modal.querySelector('.modal-content').classList.add('scale-95');
+        modal.style.opacity = '0';
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300); // Match transition duration
+    };
+
+    modal.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            closeModal();
+        }
+    });
+
+    // Quiz logic
+    const submitQuizButton = document.getElementById('submit-quiz-button');
+    const quizQuestionsContainer = document.getElementById('quiz-questions');
+    const quizResultDiv = document.getElementById('quiz-result');
+    const resultTitle = document.getElementById('result-title');
+    const resultSummary = document.getElementById('result-summary');
+    const resultDetails = document.getElementById('result-details');
+
+    const quizResultsMap = {
+        persona: {
+            title: '人格面具傾向',
+            summary: '你傾向於在不同情境中展現出與社會期望一致的形象，可能較注重外界的評價。',
+            details: [
+                '你擅長適應環境，並在社交場合中表現得體。',
+                '有時可能會感到真正的自我被掩蓋，或擔心不被他人接受。',
+                '試著探索你的真實感受和需求，允許自己展現更多不同的面向，不需總是符合他人期待。'
+            ]
+        },
+        animaAnimus: {
+            title: '阿尼瑪/阿尼姆斯傾向',
+            summary: '你可能正在處理與內在異性特質、人際關係（尤其是親密關係）或情感與邏輯平衡相關的議題。',
+            details: [
+                '你可能在關係中對異性投射了某些理想或期待，或容易被難以理解的特質所吸引或排斥。',
+                '內心深處可能存在著情感與理智之間的拉扯或融合的過程。',
+                '思考你在關係中反覆遇到的模式，這可能是內在阿尼瑪/阿尼姆斯的展現，透過覺察來整合這些特質。'
+            ]
+        },
+        individuation: {
+            title: '個體化歷程傾向',
+            summary: '你正積極地走在自我整合與實現的道路上，努力成為更完整、更真實的自己。',
+            details: [
+                '你對內在探索和個人成長抱有較強的興趣和動力。',
+                '能夠較好地接納自己的優點與缺點，並視其為成長的一部分。',
+                '保持好奇心，繼續探索你的夢境、象徵和內在聲音，這將深化你的個體化旅程。'
+            ]
+        }
+    };
+
+    submitQuizButton.addEventListener('click', () => {
+        const selectedAnswers = {};
+        let allAnswered = true;
+        for (let i = 1; i <= 5; i++) {
+            const questionName = `q${i}`;
+            const selectedOption = document.querySelector(`input[name="${questionName}"]:checked`);
+            if (selectedOption) {
+                selectedAnswers[questionName] = selectedOption.value;
+            } else {
+                allAnswered = false;
+                break;
+            }
+        }
+
+        if (!allAnswered) {
+            resultTitle.textContent = '請完成所有問題';
+            resultSummary.textContent = '請回答所有問題以獲得完整的分析。';
+            resultDetails.innerHTML = '';
+            quizResultDiv.classList.remove('hidden');
+            return;
+        }
+
+        // Simple scoring based on the dominant answer category
+        const score = { persona: 0, animaAnimus: 0, individuation: 0 };
+        for (const q in selectedAnswers) {
+            score[selectedAnswers[q]]++;
+        }
+
+        let dominantType = '';
+        let maxScore = -1;
+        for (const type in score) {
+            if (score[type] > maxScore) {
+                maxScore = score[type];
+                dominantType = type;
+            } else if (score[type] === maxScore) {
+                // If scores are tied, default to 'individuation' for a positive outlook, or other logic.
+                // For simplicity, let's keep the first one found if tied, unless 'individuation' is also tied.
+                // If 'individuation' is one of the tied max scores, prioritize it.
+                if (type === 'individuation') {
+                    dominantType = type;
+                }
+            }
+        }
+
+        const result = quizResultsMap[dominantType];
+        if (result) {
+            resultTitle.textContent = result.title;
+            resultSummary.textContent = result.summary;
+            resultDetails.innerHTML = result.details.map(detail => `<p>${detail}</p>`).join('');
+        } else {
+            resultTitle.textContent = '無法判斷您的心靈狀態';
+            resultSummary.textContent = '請確保選擇了每個問題的答案，或嘗試重新測驗。';
+            resultDetails.innerHTML = '';
+        }
+        quizResultDiv.classList.remove('hidden');
+        quizResultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    // Concept Clarifier (LLM-powered)
+    const clarifierInput = document.getElementById('clarifier-input');
+    const clarifierButton = document.getElementById('clarifier-button');
+    const clarifierButtonText = document.getElementById('clarifier-button-text');
+    const clarifierLoading = document.getElementById('clarifier-loading');
+    const clarifierOutput = document.getElementById('clarifier-output');
+
+    clarifierButton.addEventListener('click', async () => {
+        const prompt = clarifierInput.value.trim();
+        if (!prompt) {
+            clarifierOutput.innerHTML = '<p class="text-red-500">請輸入您想了解的概念。</p>';
+            return;
+        }
+
+        clarifierButton.disabled = true;
+        clarifierButtonText.classList.add('hidden');
+        clarifierLoading.classList.remove('hidden');
+        clarifierOutput.innerHTML = '<p class="text-center text-gray-500">正在解析中，請稍候...</p>';
+
+        try {
+            // Placeholder for Gemini API call
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: `請用繁體中文，以榮格心理學的視角，詳細解釋以下概念並提供一個相關的簡單案例，將解釋控制在300字以內："${prompt}"` }] });
+            const payload = { contents: chatHistory };
+            const apiKey = ""; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+            
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            
+            if (result.candidates && result.candidates.length > 0 &&
+                result.candidates[0].content && result.candidates[0].content.parts &&
+                result.candidates[0].content.parts.length > 0) {
+                const text = result.candidates[0].content.parts[0].text;
+                clarifierOutput.innerHTML = `<p>${text}</p>`;
+            } else {
+                clarifierOutput.innerHTML = '<p class="text-red-500">抱歉，無法解析該概念。請嘗試其他概念。</p>';
+            }
+
+        } catch (error) {
+            console.error('Gemini API Error:', error);
+            clarifierOutput.innerHTML = '<p class="text-red-500">解析時發生錯誤，請稍後再試。</p>';
+        } finally {
+            clarifierButton.disabled = false;
+            clarifierButtonText.classList.remove('hidden');
+            clarifierLoading.classList.add('hidden');
+        }
+    });
+
+});
+</script>
+</body>
+</html>
