@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的學習筆記</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Header區域 */
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .logo-placeholder {
+            width: 400px;
+            height: 80px;
+            background-color: #e9ecef;
+            border: 2px dashed #6c757d;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        /* 主要內容區域 */
+        .main-content {
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 0 20px;
+        }
+
+        /* 書籍網格容器 */
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            justify-items: center;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* 書籍項目 */
+        .book-item {
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .book-item:hover {
+            transform: translateY(-5px);
+        }
+
+        /* 書籍封面 */
+        .book-cover {
+            width: 180px;
+            height: 240px;
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .book-cover:hover {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        /* 書籍封面 - 閉合狀態 */
+        .book-cover .closed-book {
+            font-size: 14px;
+            color: #6c757d;
+            transition: opacity 0.3s ease;
+        }
+
+        /* 書籍封面 - 打開狀態（默認隱藏）*/
+        .book-cover .open-book {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #f8f9fa 50%, #e9ecef 50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .open-book::before {
+            content: "📖";
+            font-size: 48px;
+        }
+
+        /* Hover效果 - 顯示打開的書 */
+        .book-cover:hover .closed-book {
+            opacity: 0;
+        }
+
+        .book-cover:hover .open-book {
+            opacity: 1;
+        }
+
+        /* 書籍標題連結 */
+        .book-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .book-title a {
+            text-decoration: none;
+            color: #495057;
+            transition: color 0.3s ease;
+        }
+
+        .book-title a:hover {
+            color: #007bff;
+        }
+
+        /* 頁尾 */
+        .footer {
+            text-align: center;
+            padding: 30px 20px;
+            background-color: #fff;
+            border-top: 1px solid #e9ecef;
+            margin-top: 80px;
+        }
+
+        .copyright {
+            font-size: 12px;
+            color: #6c757d;
+            line-height: 1.5;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .logo-placeholder {
+                width: 300px;
+                height: 60px;
+            }
+            
+            .books-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 30px;
+            }
+            
+            .book-cover {
+                width: 140px;
+                height: 180px;
+            }
+            
+            .book-title {
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .books-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header區域 -->
+    <header class="header">
+        <div class="logo-placeholder">
+            LOGO 位置 (400×80)
+        </div>
+    </header>
+
+    <!-- 主要內容 -->
+    <main class="main-content">
+        <div class="books-grid">
+            <!-- 榮格心理學 -->
+            <div class="book-item">
+                <div class="book-cover">
+                    <div class="closed-book">📚 榮格心理學</div>
+                    <div class="open-book"></div>
+                </div>
+                <div class="book-title">
+                    <a href="Jungian_psychology.html">榮格心理學</a>
+                </div>
+            </div>
+
+            <!-- 島嶼DNA -->
+            <div class="book-item">
+                <div class="book-cover">
+                    <div class="closed-book">🏝️ 島嶼DNA</div>
+                    <div class="open-book"></div>
+                </div>
+                <div class="book-title">
+                    <a href="island_DNA.html">島嶼DNA</a>
+                </div>
+            </div>
+
+            <!-- 未來可以繼續添加更多書籍 -->
+            <!-- 
+            <div class="book-item">
+                <div class="book-cover">
+                    <div class="closed-book">📖 新書籍</div>
+                    <div class="open-book"></div>
+                </div>
+                <div class="book-title">
+                    <a href="#new-book">新書籍標題</a>
+                </div>
+            </div>
+            -->
+        </div>
+    </main>
+
+    <!-- 頁尾 -->
+    <footer class="footer">
+        <div class="copyright">
+            © 2025 我的學習筆記 | 版權所有<br>
+            持續學習，記錄成長的每一步
+        </div>
+    </footer>
+</body>
+</html>
