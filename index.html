@@ -11,11 +11,23 @@
             box-sizing: border-box;
         }
 
+        html, body {
+            height: 100%; /* 讓 html 和 body 佔滿整個視窗高度 */
+            margin: 0;
+        }
+
         body {
             font-family: 'Microsoft JhengHei', Arial, sans-serif;
             background-color: #f8f9fa;
             color: #333;
             line-height: 1.6;
+            display: flex; /* 將 body 設為 Flex 容器 */
+            flex-direction: column; /* 讓子元素垂直排列 */
+        }
+
+        /* 頁面內容容器，將 header 和 main 包裹起來 */
+        .page-content-wrapper {
+            flex-grow: 1; /* 讓這個容器佔據所有剩餘空間，將頁尾推到底部 */
         }
 
         /* Header區域 */
@@ -59,86 +71,98 @@
         /* 書籍項目 */
         .book-item {
             text-align: center;
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease; /* 保留 hover 位移效果在此 */
         }
 
         .book-item:hover {
             transform: translateY(-5px);
         }
 
-        /* 書籍封面 */
+        /* 新增：包裝書籍封面和標題的連結區塊 */
+        .book-link {
+            display: block; /* 讓整個區塊可點擊 */
+            text-decoration: none; /* 移除連結下劃線 */
+            color: inherit; /* 繼承父元素的文字顏色 */
+        }
+
+        /* 書籍封面容器 - 實現3D翻轉的關鍵 */
         .book-cover {
             width: 180px;
             height: 240px;
-            background-color: #fff;
+            background-color: #fff; /* fallback color */
             border: 1px solid #dee2e6;
             border-radius: 8px;
             margin: 0 auto 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             position: relative;
-            overflow: hidden;
+            overflow: hidden; /* 確保內容不溢出 */
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
             cursor: pointer;
+
+            /* 3D 翻轉效果的關鍵屬性 */
+            perspective: 1000px; /* 定義視角深度，產生3D效果 */
+            transform-style: preserve-3d; /* 讓子元素在3D空間中呈現 */
         }
 
         .book-cover:hover {
             box-shadow: 0 8px 25px rgba(0,0,0,0.2);
         }
 
-        /* 書籍封面 - 閉合狀態 */
-        .book-cover .closed-book {
-            font-size: 14px;
-            color: #6c757d;
-            transition: opacity 0.3s ease;
-        }
-
-        /* 書籍封面 - 打開狀態（默認隱藏）*/
-        .book-cover .open-book {
+        /* 書籍封面 - 閉合狀態和打開狀態的共同樣式 */
+        .closed-book, .open-book {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(45deg, #f8f9fa 50%, #e9ecef 50%);
-            display: flex;
+            backface-visibility: hidden; /* 隱藏元素背面，避免翻轉時看到反面內容 */
+            transition: transform 0.6s ease-in-out; /* 翻轉動畫效果 */
+            display: flex; /* 讓內部圖片置中 */
             align-items: center;
             justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
         }
 
-        .open-book::before {
-            content: "📖";
-            font-size: 48px;
+        /* 書籍封面 - 閉合狀態（正面） */
+        .closed-book {
+            transform: rotateY(0deg); /* 初始狀態：正面朝向觀察者 */
+            background-color: #b8a48b; /* 占位符背景色 */
         }
 
-        /* Hover效果 - 顯示打開的書 */
+        /* 書籍封面 - 打開狀態（背面） */
+        .open-book {
+            transform: rotateY(180deg); /* 初始狀態：背面朝向觀察者（翻轉180度） */
+            background-color: #f8f9fa; /* 占位符背景色，模擬紙張 */
+        }
+
+        /* 翻轉效果 */
         .book-cover:hover .closed-book {
-            opacity: 0;
+            transform: rotateY(-180deg); /* 懸停時，正面翻轉到背面 */
         }
 
         .book-cover:hover .open-book {
-            opacity: 1;
+            transform: rotateY(0deg); /* 懸停時，背面翻轉到正面 */
         }
 
-        /* 書籍標題連結 */
+        /* 內部圖片樣式 */
+        .closed-book img, .open-book img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover; /* 確保圖片覆蓋整個區域 */
+            border-radius: 8px; /* 繼承圓角 */
+        }
+
+        /* 書籍標題 (現在直接在 .book-link 內) */
         .book-title {
             font-size: 18px;
             font-weight: 600;
             margin-bottom: 10px;
+            color: #495057; /* 預設文字顏色 */
+            transition: color 0.3s ease; /* 加入顏色過渡效果 */
         }
-
-        .book-title a {
-            text-decoration: none;
-            color: #495057;
-            transition: color 0.3s ease;
-        }
-
-        .book-title a:hover {
-            color: #007bff;
+        
+        /* 當滑鼠懸停在 .book-link 上時，改變 .book-title 的顏色 */
+        .book-link:hover .book-title {
+            color: #9c8153;
         }
 
         /* 頁尾 */
@@ -147,7 +171,7 @@
             padding: 30px 20px;
             background-color: #fff;
             border-top: 1px solid #e9ecef;
-            margin-top: 80px;
+            /* margin-top: 80px; 這行不再需要，因為 flexbox 會將其推到底部 */
         }
 
         .copyright {
@@ -186,57 +210,75 @@
     </style>
 </head>
 <body>
-    <!-- Header區域 -->
-    <header class="header">
-        <div class="logo-placeholder">
-            LOGO 位置 (400×80)
-        </div>
-    </header>
-
-    <!-- 主要內容 -->
-    <main class="main-content">
-        <div class="books-grid">
-            <!-- 榮格心理學 -->
-            <div class="book-item">
-                <div class="book-cover">
-                    <div class="closed-book">📚 榮格心理學</div>
-                    <div class="open-book"></div>
-                </div>
-                <div class="book-title">
-                    <a href="/Jungian_psychology.html">榮格心理學</a>
-                </div>
+    <div class="page-content-wrapper"> <!-- 新增的頁面內容包裝器 -->
+        <!-- Header區域 -->
+        <header class="header">
+            <div class="logo-placeholder">
+                LOGO 位置 (400×80)
             </div>
+        </header>
 
-            <!-- 島嶼DNA -->
-            <div class="book-item">
-                <div class="book-cover">
-                    <div class="closed-book">🏝️ 島嶼DNA</div>
-                    <div class="open-book"></div>
+        <!-- 主要內容 -->
+        <main class="main-content">
+            <div class="books-grid">
+                <!-- 榮格心理學 -->
+                <div class="book-item">
+                    <a href="/Jungian_psychology.html" class="book-link"> <!-- 整個書籍項目變成可點擊連結 -->
+                        <div class="book-cover">
+                            <div class="closed-book">
+                                <!-- A圖：榮格心理學封面 -->
+                                <img src="/image/ju1.jpg" alt="榮格心理學封面">
+                            </div>
+                            <div class="open-book">
+                                <!-- B圖：榮格心理學翻開內容 -->
+                                <img src="image/ju2.png" alt="榮格心理學內頁">
+                            </div>
+                        </div>
+                        <div class="book-title">榮格心理學</div>
+                    </a>
                 </div>
-                <div class="book-title">
-                    <a href="/island_DNA.html">島嶼DNA</a>
-                </div>
-            </div>
 
-            <!-- 未來可以繼續添加更多書籍 -->
-            <!-- 
-            <div class="book-item">
-                <div class="book-cover">
-                    <div class="closed-book">📖 新書籍</div>
-                    <div class="open-book"></div>
+                <!-- 島嶼DNA -->
+                <div class="book-item">
+                    <a href="/island_DNA.html" class="book-link"> <!-- 整個書籍項目變成可點擊連結 -->
+                        <div class="book-cover">
+                            <div class="closed-book">
+                                <!-- A圖：島嶼DNA封面 -->
+                                <img src="image/isl01.jpg" alt="島嶼DNA封面">
+                            </div>
+                            <div class="open-book">
+                                <!-- B圖：島嶼DNA翻開內容 -->
+                                <img src="image/isl02.jpg" alt="島嶼DNA內頁">
+                            </div>
+                        </div>
+                        <div class="book-title">島嶼DNA</div>
+                    </a>
                 </div>
-                <div class="book-title">
-                    <a href="#new-book">新書籍標題</a>
+
+                <!-- 未來可以繼續添加更多書籍 -->
+                <!-- 
+                <div class="book-item">
+                    <a href="#new-book" class="book-link">
+                        <div class="book-cover">
+                            <div class="closed-book">
+                                <img src="https://placehold.co/180x240/B8A48B/FFFFFF?text=新書籍+封面" alt="新書籍封面">
+                            </div>
+                            <div class="open-book">
+                                <img src="https://placehold.co/180x240/F8F9FA/6C757D?text=新書籍+內頁" alt="新書籍內頁">
+                            </div>
+                        </div>
+                        <div class="book-title">新書籍標題</div>
+                    </a>
                 </div>
+                -->
             </div>
-            -->
-        </div>
-    </main>
+        </main>
+    </div> <!-- 頁面內容包裝器結束 -->
 
     <!-- 頁尾 -->
     <footer class="footer">
         <div class="copyright">
-            © 2025 我的學習筆記 | 版權所有<br>
+            © 2025 BayBay的學習筆記 |<br>
             持續學習，記錄成長的每一步
         </div>
     </footer>

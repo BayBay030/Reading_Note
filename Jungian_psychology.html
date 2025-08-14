@@ -142,7 +142,7 @@
             width: 100%;
             max-width: 800px; /* Adjusted for 3x6 horizontal, aiming for 2:1 aspect ratio */
             margin: 0 auto;
-            aspect-ratio: 2 / 1; /* For 3x6, effectively 1:2 aspect ratio if it means 3 units height, 6 units width. Assuming standard horizontal photo aspect ratio, often 2:1 or 16:9. Let's go with 2:1 for now, as 3x6 literally isn't common. If 3:6 means 3 units high by 6 units wide, then aspect ratio is 6/3 = 2. */
+            aspect-ratio: 3 / 2; /* For 3x6, effectively 1:2 aspect ratio if it means 3 units height, 6 units width. Assuming standard horizontal photo aspect ratio, often 2:1 or 16:9. Let's go with 2:1 for now, as 3x6 literally isn't common. If 3:6 means 3 units high by 6 units wide, then aspect ratio is 6/3 = 2. */
             overflow: hidden; /* Ensure image doesn't overflow */
             border-radius: 0.5rem;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
@@ -150,7 +150,8 @@
         .redbook-image-container img {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Cover the container while maintaining aspect ratio */
+            object-fit: cover;
+            object-position: top; /* 這裡新增了圖片頂部對齊的定義 */
         }
     </style>
 </head>
@@ -238,7 +239,7 @@
 
         <section id="freud-jung" class="mb-24 scroll-mt-20 bg-white p-8 rounded-lg shadow-lg">
             <h2 class="text-3xl font-bold text-center mb-4 font-serif flex items-center justify-center">
-                <span class="icon-container mr-3 text-2xl">🆚</span> 思想的岔路：榮格 vs. 佛洛伊德
+                <span class="icon-container mr-3 text-2xl">⑇</span> 思想的岔路：榮格 vs. 佛洛伊德
             </h2>
             <p class="text-center text-gray-600 max-w-2xl mx-auto mb-12">榮格與佛洛伊德的合作與決裂是20世紀心理學史上的重大事件。他們的思想分歧，為深度心理學開創了兩條截然不同的道路。點擊下方按鈕，比較他們在核心議題上的觀點差異。</p>
             <div id="comparison-container" class="grid md:grid-cols-2 gap-8">
@@ -416,7 +417,7 @@
 
         <section id="concept-clarifier" class="mb-24 scroll-mt-20 bg-white p-8 rounded-lg shadow-lg">
             <h2 class="text-3xl font-bold text-center mb-4 font-serif flex items-center justify-center">
-                <span class="icon-container mr-3 text-2xl">🧠</span> 榮格概念解析器 ✨
+                <span class="icon-container mr-3 text-2xl">🧠</span> 榮格xAI 概念解析器 ✨
             </h2>
             <p class="text-center text-gray-600 max-w-2xl mx-auto mb-8">在這裡輸入任何您想深入了解的榮格心理學概念，AI 將為您提供詳細的解釋和實用案例。</p>
             <div class="flex flex-col items-center space-y-4">
@@ -525,27 +526,27 @@ document.addEventListener('DOMContentLoaded', function () {
     const redbookData = {
         redbook_spirit: {
             title: '時代精神 vs. 深度精神',
-            imageUrl: 'https://placehold.co/800x400/B1A296/FFFFFF?text=紅書章節1：時代與深度精神',
+            imageUrl: './image/001.png',
             text: '<p>榮格區分了兩種經驗維度：「時代精神」代表我們外在、理性、不斷變化的社會規範；而「深度精神」則是內在、永恆、超越時間的無意識世界。榮格認為，要尋回失落的靈魂，必須潛入「深度精神」，傾聽來自內在的聲音，而非盲目追隨外部世界的價值。</p>'
         },
         redbook_hero: {
             title: '英雄之死',
-            imageUrl: 'https://placehold.co/800x400/A0522D/FFFFFF?text=紅書章節2：英雄之死',
+            imageUrl: './image/002.png',
             text: '<p>這並非指實際的死亡，而是象徵著「自我」的轉化。過度認同堅定、專一的「英雄」原型，會讓我們變得僵化。因此，必須在心理上「殺死」這個英雄，放下小我的控制慾，才能讓更完整、更真實的「自性」誕生。這是一種臣服的智慧，是整合內在對立面的前提。</p>'
         },
         redbook_redman: {
             title: '紅人與內在指引',
-            imageUrl: 'https://placehold.co/800x400/7395AE/FFFFFF?text=紅書章節3：紅人',
+            imageUrl: './image/003-2.png',
             text: '<p>在《紅書》的旅程中，榮格遇到了許多來自無意識的形象，如「紅人」。這些形象不僅是象徵，更被他體驗為活生生的、自主的嚮導。他透過「積極想像」與這些內在形象對話，從中獲得指引。這表明無意識是一個充滿智慧、能夠引導意識的活躍領域。</p>'
         },
         redbook_fool: {
             title: '神聖愚者',
-            imageUrl: 'https://placehold.co/800x400/B1A296/FFFFFF?text=紅書章節4：神聖愚者',
+            imageUrl: './image/004.png',
             text: '<p>「神聖愚者」原型代表一種超越世俗邏輯的智慧。他們看似天真、不合時宜，卻能說出最根本的真相。這個形象提醒我們，真正的洞察力往往來自於心，而非理智，需要我們擁抱脆弱與不確定性，挑戰社會的偽善與僵化。</p>'
         },
         redbook_individuation: {
             title: '個體化的實踐',
-            imageUrl: 'https://placehold.co/800x400/A0522D/FFFFFF?text=紅書章節5：個體化實踐',
+            imageUrl: './image/005.png',
             text: '<p>《紅書》的整個創作過程，就是榮格個體化歷程的生動展現。它證明了榮格的理論並非空想，而是源於他個人深刻、痛苦卻極富創造性的靈魂探索。這部作品是他所有核心概念（如原型、集體無意識）的試驗場與誕生地。</p>'
         }
     };
