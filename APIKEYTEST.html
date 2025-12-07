@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini API 金鑰呼叫範例</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 2.5rem;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        .title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+        .input-area {
+            margin-bottom: 1.5rem;
+        }
+        .input-area textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 0.5rem;
+            min-height: 100px;
+            resize: vertical;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        .action-button {
+            background-color: #4CAF50; /* Green */
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            border: none;
+        }
+        .action-button:hover {
+            background-color: #45a049;
+        }
+        .output-area {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: #e2e8f0;
+            border-radius: 0.5rem;
+            min-height: 80px;
+            text-align: left;
+            color: #4a5568;
+            word-wrap: break-word; /* Ensure long words break */
+        }
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+            display: none; /* Hidden by default */
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">Gemini API 呼叫範例</h1>
+        <div class="input-area">
+            <textarea id="promptInput" placeholder="請輸入您想向AI提出的問題..."></textarea>
+        </div>
+        <button id="callApiButton" class="action-button">
+            <span id="buttonSpinner" class="loading-spinner"></span>
+            發送請求
+        </button>
+        <div class="output-area" id="responseOutput">
+            AI 的回應將顯示在這裡...
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const promptInput = document.getElementById('promptInput');
+            const callApiButton = document.getElementById('callApiButton');
+            const responseOutput = document.getElementById('responseOutput');
+            const buttonSpinner = document.getElementById('buttonSpinner');
+
+            callApiButton.addEventListener('click', async () => {
+                const userPrompt = promptInput.value.trim();
+
+                if (!userPrompt) {
+                    responseOutput.textContent = "請輸入問題後再發送請求！";
+                    return;
+                }
+
+                // --- 這是您需要修改的關鍵部分 ---
+                // 當您將此程式碼部署到您自己的網站時，
+                // 請將此處的空字串替換為您的實際 Gemini API 金鑰。
+                // 例如: const apiKey = "YOUR_ACTUAL_GEMINI_API_KEY_HERE";
+                const apiKey = "YOUR_ACTUAL_GEMINI_API_KEY_HERE"; 
+                // --- 這是您需要修改的關鍵部分 ---
+
+                if (apiKey === "YOUR_ACTUAL_GEMINI_API_KEY_HERE" || apiKey === "") {
+                    responseOutput.textContent = "錯誤：請在程式碼中填寫您的實際 Gemini API 金鑰！";
+                    return;
+                }
+
+
+                // 顯示加載動畫和禁用按鈕
+                buttonSpinner.style.display = 'inline-block';
+                callApiButton.disabled = true;
+                responseOutput.textContent = "正在思考中，請稍候...";
+
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: userPrompt }] });
+                const payload = { contents: chatHistory };
+
+                // 使用 gemini-2.5-flash-preview-05-20 模型
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(`API 錯誤: ${response.status} ${response.statusText} - ${errorData.error ? errorData.error.message : '未知錯誤'}`);
+                    }
+
+                    const result = await response.json();
+
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        responseOutput.textContent = result.candidates[0].content.parts[0].text;
+                    } else {
+                        responseOutput.textContent = "無法獲得 AI 回應。可能是 API 返回的格式不正確。";
+                        console.error("Unexpected API response structure:", result);
+                    }
+                } catch (error) {
+                    console.error("呼叫 API 時發生錯誤:", error);
+                    responseOutput.textContent = `呼叫 API 時發生錯誤: ${error.message}`;
+                } finally {
+                    // 隱藏加載動畫並啟用按鈕
+                    buttonSpinner.style.display = 'none';
+                    callApiButton.disabled = false;
+                }
+            });
+        });
+    </script>
+
+<!-- 
+複製程式碼： 將上面的完整 HTML 程式碼複製到一個新的 .html 檔案中 (例如：api_test.html)。
+
+替換金鑰： 在 <script> 標籤內，找到這行：
+
+JavaScript
+
+const apiKey = "YOUR_ACTUAL_GEMINI_API_KEY_HERE";
+請將 YOUR_ACTUAL_GEMINI_API_KEY_HERE 替換為您從 Google Cloud 或 Gemini API 控制台獲取的實際 API 金鑰。
+
+在您自己的網站上運行： 將這個 .html 檔案部署到您自己的網站伺服器上（例如，透過 Firebase Hosting、GitHub Pages 或任何其他靜態網站託管服務）。
+
+重要提醒：前端 API 金鑰的安全性
+再次強調，將 API 金鑰直接寫在前端 HTML 或 JavaScript 程式碼中，存在安全風險。任何瀏覽您網站的人都可以透過瀏覽器開發者工具查看到您的金鑰。
+
+對於生產環境或涉及敏感操作的應用程式，強烈建議您採用更安全的做法，例如：
+
+使用後端代理伺服器： 將 API 呼叫的邏輯移至後端伺服器（例如，使用 Firebase Cloud Functions 或 Node.js/Python 伺服器）。金鑰儲存在後端，前端只向您的後端發送請求。
+
+API 金鑰限制： 在 Google Cloud Console 中，為您的 API 金鑰設定 API 限制（只允許呼叫 Gemini API）和 HTTP 引用網址限制（只允許您的網站域名呼叫此金鑰）。這會降低金鑰被盜用後的危害，但不能完全阻止金鑰被竊取。
+-->
+
+
+</body>
+</html>

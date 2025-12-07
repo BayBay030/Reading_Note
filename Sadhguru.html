@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>薩古魯的智慧筆記</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #FDFBF8;
+            color: #3a3a3a;
+        }
+
+        .nav-link {
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #AD8B73;
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            width: 100%;
+        }
+
+        .active-tab {
+            border-color: #AD8B73;
+            color: #AD8B73;
+            background-color: #FFF;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            border-radius: 9999px;
+            background-color: #CEAB93;
+            border: 2px solid #FDFBF8;
+        }
+
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .stats-item {
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            background-color: #FDFBF8;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease-in-out;
+            border-left: 4px solid #CEAB93;
+        }
+
+        .stats-item:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+
+<body class="antialiased">
+    <!-- Floating Home Button -->
+    <a href="index.html"
+        class="fixed top-4 left-4 z-[100] p-2 bg-white/90 rounded-full shadow-lg hover:bg-white hover:scale-110 transition-all duration-300 group border border-gray-200"
+        aria-label="Back to Home">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="text-gray-600 group-hover:text-gray-900">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+    </a>
+
+    <header id="header" class="sticky top-0 z-50 w-full glassmorphism shadow-sm">
+        <nav class="container mx-auto pl-16 pr-6 py-4 flex justify-between items-center">
+            <div class="text-xl font-bold text-[#6B4F4F]">薩古魯的智慧筆記</div>
+            <div class="hidden md:flex space-x-8">
+                <a href="#journey" class="nav-link text-gray-700 hover:text-[#AD8B73]">開悟之旅</a>
+                <a href="#philosophy" class="nav-link text-gray-700 hover:text-[#AD8B73]">核心哲學</a>
+                <a href="#books" class="nav-link text-gray-700 hover:text-[#AD8B73]">著作選讀</a>
+                <a href="#notes" class="nav-link text-gray-700 hover:text-[#AD8B73]">精華筆記</a>
+                <a href="#legacy" class="nav-link text-gray-700 hover:text-[#AD8B73]">當代影響</a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden text-gray-700 focus:outline-none">
+                <span class="text-2xl">☰</span>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden bg-white/80">
+            <a href="#journey" class="block text-center py-2 text-gray-700 hover:bg-[#E3D8D0]">開悟之旅</a>
+            <a href="#philosophy" class="block text-center py-2 text-gray-700 hover:bg-[#E3D8D0]">核心哲學</a>
+            <a href="#books" class="block text-center py-2 text-gray-700 hover:bg-[#E3D8D0]">著作選讀</a>
+            <a href="#notes" class="block text-center py-2 text-gray-700 hover:bg-[#E3D8D0]">精華筆記</a>
+            <a href="#legacy" class="block text-center py-2 text-gray-700 hover:bg-[#E3D8D0]">當代影響</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+
+        <section id="hero" class="text-center mb-20">
+            <h1 class="text-4xl md:text-6xl font-bold text-[#6B4F4F] mb-4">探索內在工程的建築師</h1>
+            <div class="bg-white p-6 rounded-lg shadow-lg max-w-3xl mx-auto mb-6">
+                <p class="text-xl md:text-2xl italic font-medium text-gray-700">
+                    「你內在的幸福快樂，不需要任何外在事物的許可。它是你的天性。」
+                </p>
+            </div>
+            <p class="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
+                薩古魯，一位瑜伽士、神秘家和遠見卓識者。他將古老的瑜伽科學以一種現代、易於理解的方式呈現給世界，引導人們探索生命的更深層維度。
+            </p>
+        </section>
+
+        <section id="journey" class="mb-20">
+            <div class="flex flex-col md:flex-row items-center justify-center mb-12">
+                <!-- 圖片預留位置：你可以在此處放上薩古魯的照片。-->
+                <div
+                    class="w-24 h-32 bg-gray-300 rounded-t-full rounded-b-lg overflow-hidden flex items-center justify-center mr-6">
+
+                </div>
+                <h2 class="text-3xl font-bold text-[#6B4F4F] text-center md:text-left">開悟之旅：查蒙迪山上的體驗</h2>
+            </div>
+            <div class="max-w-2xl mx-auto relative border-l-2 border-[#CEAB93] pl-8 py-4">
+                <div class="mb-12">
+                    <div
+                        class="timeline-item relative p-4 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
+                        <h3 class="font-bold text-lg text-[#AD8B73]">背景：一個務實的商人</h3>
+                        <p class="text-gray-600 mt-2">在靈性體驗之前，薩古魯（本名 Jaggi
+                            Vasudev）是一位成功的商人和摩托車愛好者。他對神秘學沒有特別的追求，他的生活充滿了對外部世界的探索和冒險，他唯一的信念是「我不相信任何事」。</p>
+                    </div>
+                </div>
+                <div class="mb-12">
+                    <div
+                        class="timeline-item relative p-4 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
+                        <h3 class="font-bold text-lg text-[#AD8B73]">1982年9月23日：命運的轉捩點</h3>
+                        <p class="text-gray-600 mt-2">
+                            25歲那年，他一時興起騎車登上印度邁索爾的查蒙迪山。他坐在一塊岩石上，眼睛睜著，突然間，他經歷了一場深刻的意識轉變。他感覺自己不再局限於身體，而是擴展到了周圍的一切——岩石、樹木、大地。他坐在那裡，狂喜的淚水不斷湧出，他不知道自己是誰，只知道自己與萬物合而為一。他沒有閉上眼睛，因為他害怕如果閉上，這份瘋狂的幸福感就會消失。他感覺自己已經坐了幾個小時，但當他回家時，發現時間已經過去了四個多小時。
+                        </p>
+                    </div>
+                </div>
+                <div>
+                    <div
+                        class="timeline-item relative p-4 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
+                        <h3 class="font-bold text-lg text-[#AD8B73]">覺醒之後：生命的全新方向</h3>
+                        <p class="text-gray-600 mt-2">
+                            這次持續了幾個小時的體驗，徹底改變了他的生命。他意識到，每個人內在都潛藏著這種合一的可能性。在接下來的幾個月裡，他無法正常生活，因為他發現自己已經不是那個舊有的Jaggi。他放棄了生意，決定將自己的餘生奉獻給分享這種內在轉化的工具，這便是「內在工程」的起源。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="philosophy" class="mb-20">
+            <h2 class="text-3xl font-bold text-center text-[#6B4F4F] mb-4">核心哲學</h2>
+            <p class="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
+                薩古魯的教導並非一套信仰系統，而是一門技術，一種探索生命的方法。此圖表視覺化呈現了其四大核心概念。</p>
+            <div class="flex flex-col lg:flex-row items-center justify-center gap-8">
+                <div class="chart-container">
+                    <canvas id="philosophyChart"></canvas>
+                </div>
+                <div class="lg:w-1/2 p-4">
+                    <h3 class="text-2xl font-bold text-[#AD8B73] mb-4">四大核心概念</h3>
+                    <ul class="space-y-4 text-gray-700">
+                        <li>
+                            <span
+                                class="font-bold text-[#AD8B73]">內在工程：</span>一套旨在提升個人幸福感和意識水平的技術。它教導我們，生命的體驗是從內在創造的，我們可以透過調整自己的內在系統來主宰自己的命運。
+                        </li>
+                        <li>
+                            <span
+                                class="font-bold text-[#CEAB93]">責任：</span>薩古魯將責任定義為「回應的能力」。這意味著我們對自己生命中的一切，包括我們的思想、情感和體驗，都擁有100%的回應能力。這是一種讓我們從受害者心態轉變為創造者的賦權。
+                        </li>
+                        <li>
+                            <span
+                                class="font-bold text-[#E3D8D0]">意識：</span>指的是超越心智層面的覺知。提升意識意味著能夠有意識地觀察和引導自己的心智活動，而不是被其奴役。
+                        </li>
+                        <li>
+                            <span
+                                class="font-bold text-[#FFFBEB]">瑜伽：</span>在薩古魯的教導中，「瑜伽」的字面意思是「合一」。它不僅僅是體式練習，而是一門旨在消除個體與宇宙之間的分離感，體驗到生命的終極本質的科學。
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="books" class="mb-20">
+            <h2 class="text-3xl font-bold text-center text-[#6B4F4F] mb-12">著作選讀</h2>
+            <div class="max-w-4xl mx-auto">
+                <div class="flex justify-center border-b-2 border-gray-200 mb-8">
+                    <button data-tab="inner-engineering"
+                        class="book-tab px-6 py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-[#AD8B73] focus:outline-none active-tab">內在工程</button>
+                    <button data-tab="karma"
+                        class="book-tab px-6 py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-[#AD8B73] focus:outline-none">業</button>
+                    <button data-tab="death"
+                        class="book-tab px-6 py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-[#AD8B73] focus:outline-none">死亡</button>
+                </div>
+                <div id="book-content" class="bg-white p-8 rounded-lg shadow-lg">
+                    <div id="inner-engineering" class="book-panel">
+                        <h3 class="text-2xl font-bold text-[#6B4F4F] mb-4">《內在工程：一個瑜伽士的喜悅指南》</h3>
+                        <p class="text-gray-700 mb-4">
+                            這本書是薩古魯的旗艦之作，系統性地闡述了他的核心教導。它不僅僅是理論，更提供了一套實用的工具和技術，幫助讀者從內在改變自己的體驗，創造一個充滿喜悅和活力的生命。</p>
+                        <blockquote class="border-l-4 border-[#CEAB93] pl-4 italic text-gray-600">
+                            「你內在的幸福快樂，不需要任何外在事物的許可。它是你的天性。」
+                        </blockquote>
+                    </div>
+                    <div id="karma" class="book-panel hidden">
+                        <h3 class="text-2xl font-bold text-[#6B4F4F] mb-4">《業：一個瑜伽士的創造指南》</h3>
+                        <p class="text-gray-700 mb-4">
+                            薩古魯在這本書中，顛覆了傳統對「業」的理解。他解釋道，「業」並非獎懲系統，而是一套關於行動和記憶的內在機制。理解了業的運作，我們就能從過去的束縛中解脫，有意識地創造自己的命運。</p>
+                        <blockquote class="border-l-4 border-[#CEAB93] pl-4 italic text-gray-600">
+                            「『業』是你寫下的軟體。你有能力改寫它。」
+                        </blockquote>
+                    </div>
+                    <div id="death" class="book-panel hidden">
+                        <h3 class="text-2xl font-bold text-[#6B4F4F] mb-4">《死亡：一個瑜伽士的內在故事》</h3>
+                        <p class="text-gray-700 mb-4">
+                            死亡是生命中唯一確定的事，但多數人對它充滿恐懼和未知。薩古魯以清晰而務實的視角，探討了死亡的本質、過程以及如何為這個終極旅程做好準備。這本書旨在幫助人們以更開闊、無懼的態度面對生命和死亡。
+                        </p>
+                        <blockquote class="border-l-4 border-[#CEAB93] pl-4 italic text-gray-600">
+                            「只有當你接納了死亡的必然性，你才會真正地活著。」
+                        </blockquote>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="notes" class="bg-[#E3D8D0] p-8 rounded-lg shadow-inner mb-20">
+            <h2 class="text-3xl font-bold text-center text-[#6B4F4F] mb-4">精華筆記：解鎖更多薩古魯的智慧</h2>
+            <p class="text-center text-gray-700 mb-10 max-w-2xl mx-auto">
+                除了核心教義，薩古魯的教導還遍及生活的方方面面。這些精選筆記將帶你用更輕巧的方式，觸摸他的深刻洞見。</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
+                    <h3 class="font-bold text-xl text-[#AD8B73] mb-3">為什麼快樂這麼難？</h3>
+                    <p class="text-gray-700 text-sm">
+                        薩古魯說：「快樂」不是一個遙遠的目標，而是一種選擇。我們總以為要擁有某樣東西、達到某個成就，才能快樂。但這就像在車頭掛根胡蘿蔔，永遠追不上。真正的快樂不是「擁有」什麼，而是「放下」所有不必要的負擔。當你的心靈不再被過去的記憶和未來的焦慮所困，快樂就會自然流露。
+                    </p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
+                    <h3 class="font-bold text-xl text-[#AD8B73] mb-3">情緒管理：不是控制，而是轉化</h3>
+                    <p class="text-gray-700 text-sm">
+                        你無法「控制」情緒，就像你無法阻止太陽升起。當你試圖控制時，它們只會變得更強烈。薩古魯的教導是：不要壓抑或放縱情緒，而是學會觀察它們。把情緒當作你內在的「訪客」，靜靜地看著它們來來去去。當你不再認同它們，情緒的能量就能被轉化為更正向的生命力。
+                    </p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
+                    <h3 class="font-bold text-xl text-[#AD8B73] mb-3">食物：不只是燃料，更是信息</h3>
+                    <p class="text-gray-700 text-sm">
+                        從瑜伽的角度看，你吃的東西不僅僅是物理能量，更是一種信息。你吃的食物會直接影響你的意識和精神狀態。因此，選擇什麼進入你的身體，是一個極其重要的決定。薩古魯建議，食物最好是來自植物，且越接近其自然狀態越好，因為這樣能讓你的身體和心靈都保持輕盈和活力。
+                    </p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
+                    <h3 class="font-bold text-xl text-[#AD8B73] mb-3">關係：從索取者到給予者</h3>
+                    <p class="text-gray-700 text-sm">
+                        許多人在關係中感到痛苦，是因為他們帶著「這是你欠我的」的心態。薩古魯說，當你從一個「索取者」變成一個「給予者」時，你的關係就會奇蹟般地轉變。不再期待別人給你愛或快樂，而是主動去愛、去給予。這不僅能讓關係更美好，也能讓你體驗到更高層次的喜悅。
+                    </p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
+                    <h3 class="font-bold text-xl text-[#AD8B73] mb-3">工作：不再是負擔，而是生命表達</h3>
+                    <p class="text-gray-700 text-sm">
+                        我們常常將工作視為謀生手段，因此感到疲憊和不滿。薩古魯的觀點是：你的工作是你將自己生命能量貢獻給世界的方式。如果你能將工作視為一種自發的、創造性的生命表達，那麼工作就不再是負擔，而是一種深刻的滿足感。
+                    </p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
+                    <h3 class="font-bold text-xl text-[#AD8B73] mb-3">死亡：不是終點，而是「換季」</h3>
+                    <p class="text-gray-700 text-sm">
+                        「死亡」這個詞讓我們感到恐懼，因為我們把它當作生命的終結。薩古魯說，死亡就像換衣服一樣，身體是你的「外衣」，靈魂是「你」本身。當你理解到這一點，對死亡的恐懼就會消失，因為你知道「你」永遠不會真正死去。這份理解能讓你更自由、更無畏地活在當下。
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section id="legacy" class="mb-20">
+            <h2 class="text-3xl font-bold text-center text-[#6B4F4F] mb-12">生命的最終狀態：一場行動的盛宴</h2>
+            <div class="max-w-4xl mx-auto text-gray-700 space-y-6">
+                <p>在查蒙迪山上的那場意識轉變後，薩古魯將他所體驗到的內在喜悅，轉化為無止盡的行動力。他意識到，真正的靈性並非隱居山林，而是活在塵世間，為地球上的每一個生命創造福祉。</p>
+                <p>自那時起，他的生命狀態不再只是單純的「存在」，而是一場為人類福祉而發起的盛大行動。他成立了 <a href="https://isha.sadhguru.org/tw/" target="_blank"
+                        class="text-[#AD8B73] font-semibold hover:underline">Isha
+                        基金會</a>，這是一個完全由志工運作的非營利組織，致力於推廣內在科學，以及重要的環境與社會倡議。他用他清晰的思維和幽默的表達，與世界各地的商業領袖、政治家和年輕人對話，將靈性從一個深奧難懂的概念，帶入了現實生活。
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-10">
+                    <div class="stats-item">
+                        <div>
+                            <p class="text-3xl font-bold text-[#6B4F4F]">拯救土壤</p>
+                            <p class="text-sm">全球行動，以應對土壤退化危機。</p>
+                        </div>
+                    </div>
+                    <div class="stats-item">
+                        <div>
+                            <p class="text-3xl font-bold text-[#6B4F4F]">免費教育</p>
+                            <p class="text-sm">為農村孩子提供優質教育和食物。</p>
+                        </div>
+                    </div>
+                    <div class="stats-item">
+                        <div>
+                            <p class="text-3xl font-bold text-[#6B4F4F]">河川復甦</p>
+                            <p class="text-sm">大規模植樹，恢復河流生命力。</p>
+                        </div>
+                    </div>
+                </div>
+                <p class="mt-6">
+                    因此，薩古魯的最終狀態，並非只是單純的「開悟」，而是一種將內在轉化與外在行動完美結合的生命。他向世界展示，一個真正覺醒的人，他的生命將不再是靜態的，而是一股為所有生命帶來美好與提升的巨大動能。</p>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-[#6B4F4F] text-white py-6 mt-20">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2025 薩古魯智慧筆記。僅供學習與探索之用。</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const ctx = document.getElementById('philosophyChart').getContext('2d');
+            const philosophyChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['內在工程 (Inner Engineering)', '責任 (Responsibility)', '意識 (Consciousness)', '瑜伽 (Yoga)'],
+                    datasets: [{
+                        label: '核心哲學',
+                        data: [25, 25, 25, 25],
+                        backgroundColor: [
+                            '#AD8B73',
+                            '#CEAB93',
+                            '#E3D8D0',
+                            '#FFFBEB'
+                        ],
+                        borderColor: '#FDFBF8',
+                        borderWidth: 4,
+                        hoverOffset: 15
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#3a3a3a',
+                                font: {
+                                    size: 14,
+                                    family: "'Noto Sans TC', sans-serif"
+                                }
+                            }
+                        },
+                        tooltip: {
+                            titleFont: {
+                                size: 16,
+                                family: "'Noto Sans TC', sans-serif"
+                            },
+                            bodyFont: {
+                                size: 14,
+                                family: "'Noto Sans TC', sans-serif"
+                            }
+                        }
+                    }
+                }
+            });
+
+            const tabs = document.querySelectorAll('.book-tab');
+            const panels = document.querySelectorAll('.book-panel');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(item => item.classList.remove('active-tab'));
+                    tab.classList.add('active-tab');
+
+                    const target = tab.getAttribute('data-tab');
+                    panels.forEach(panel => {
+                        if (panel.id === target) {
+                            panel.classList.remove('hidden');
+                        } else {
+                            panel.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            const navLinks = document.querySelectorAll('#header a[href^="#"]');
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    if (mobileMenu.contains(link)) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                });
+            });
+
+            const sections = document.querySelectorAll('section');
+            const headerNavLinks = document.querySelectorAll('#header .nav-link');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '-50% 0px -50% 0px',
+                threshold: 0
+            };
+
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        headerNavLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href') === `#${id}`) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+        });
+    </script>
+</body>
+
+</html>

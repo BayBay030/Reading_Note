@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>加繆的荒謬哲學探究</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: The application is designed as a single-page, scrollable journey to guide the user through Camus's complex philosophy. It starts with a captivating introduction, then breaks down core concepts into an interactive module, followed by a tangible, interactive visualization of the "Absurd Hero" (Sisyphus). It then presents his key works and clarifies his position relative to Existentialism and Nihilism. This thematic, non-linear structure is chosen over a rigid, report-like format to make abstract ideas more accessible and engaging. Users can explore concepts in any order, promoting a sense of discovery and personal inquiry rather than passive reading. The Sisyphus interaction, in particular, serves as a memorable anchor for the central theme of conscious struggle. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Camus's core philosophical tenets. Goal: Organize/Inform. Viz/Method: Interactive cards with a central display area. Interaction: User clicks a card (e.g., "The Absurd") to load detailed text. Justification: Breaks down a complex philosophy into digestible, user-selectable parts, preventing overwhelm. Method: Vanilla JS DOM manipulation.
+        - Report Info: The Myth of Sisyphus. Goal: Illustrate a core concept. Viz/Method: A simple, symbolic animation of a boulder on a slope. Interaction: A button to "Push the Boulder" triggers the animation and reveals a related quote. Justification: Transforms an abstract myth into a memorable, interactive experience, reinforcing the theme of futile, conscious effort. Method: HTML/CSS with JS-triggered transitions.
+        - Report Info: Key literary works. Goal: Inform. Viz/Method: A grid of clickable cards representing books. Interaction: Clicking a card reveals a synopsis. Justification: A clean, standard UI for presenting related items (books, projects, etc.). Method: Vanilla JS.
+        - Report Info: Absurdism vs. Existentialism & Nihilism. Goal: Compare/Clarify. Viz/Method: A clear, two-column text layout with a dynamic divider. Interaction: None. Justification: The non-linear divider visually represents the core tension between these philosophies, enhancing the narrative of intellectual struggle. Method: HTML/Tailwind Grid with CSS for the divider.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f5f5f4;
+            /* stone-100 */
+            color: #292524;
+            /* stone-800 */
+        }
+
+        .active-concept {
+            border-color: #a16207;
+            /* amber-700 */
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        .sisyphus-slope {
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(to top left, transparent 49.5%, #a8a29e 50%) no-repeat right bottom / 100% 100%;
+            position: relative;
+        }
+
+        .boulder {
+            width: 40px;
+            height: 40px;
+            background-color: #57534e;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 0;
+            right: 10%;
+            transition: all 4s ease-in-out;
+        }
+
+        .boulder.pushing {
+            transform: translate(-250%, -80px);
+            opacity: 1;
+        }
+
+        .boulder.rolling-down {
+            transition: transform 1.5s cubic-bezier(0.6, -0.28, 0.735, 0.045), opacity 0.5s linear 1s;
+            transform: translate(0, 0);
+            opacity: 1;
+        }
+
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+
+        .nav-link:hover {
+            color: #a16207;
+            /* amber-700 */
+            border-bottom-color: #a16207;
+        }
+
+        .zigzag-divider {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 2px;
+            background: repeating-linear-gradient(45deg, #a8a29e, #a8a29e 5px, #d6d3d1 5px, #d6d3d1 10px);
+            transform: translateX(-50%);
+        }
+
+        @media (min-width: 768px) {
+            .zigzag-divider {
+                width: 4px;
+                background: repeating-linear-gradient(45deg, #a8a29e, #a8a29e 8px, #d6d3d1 8px, #d6d3d1 16px);
+            }
+        }
+    </style>
+</head>
+
+<body class="antialiased">
+    <!-- Floating Home Button -->
+    <a href="index.html"
+        class="fixed top-4 left-4 z-[100] p-2 bg-white/90 rounded-full shadow-lg hover:bg-white hover:scale-110 transition-all duration-300 group border border-gray-200"
+        aria-label="Back to Home">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="text-gray-600 group-hover:text-gray-900">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+    </a>
+
+    <header class="bg-stone-50/80 backdrop-blur-md sticky top-0 z-50 w-full border-b border-stone-200">
+        <nav class="max-w-7xl mx-auto pl-16 pr-4 sm:pr-6 lg:pr-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="font-bold text-xl text-stone-800">阿爾貝·加繆</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#intro" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-stone-700">介紹</a>
+                        <a href="#concepts"
+                            class="nav-link px-3 py-2 rounded-md text-sm font-medium text-stone-700">核心概念</a>
+                        <a href="#hero"
+                            class="nav-link px-3 py-2 rounded-md text-sm font-medium text-stone-700">荒謬英雄</a>
+                        <a href="#works"
+                            class="nav-link px-3 py-2 rounded-md text-sm font-medium text-stone-700">主要著作</a>
+                        <a href="#comparison"
+                            class="nav-link px-3 py-2 rounded-md text-sm font-medium text-stone-700">思想比較</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+        <section id="intro" class="text-center mb-20 pt-10">
+            <h1 class="text-5xl md:text-6xl font-extrabold text-stone-900 tracking-tight">探究荒謬</h1>
+            <p class="mt-4 max-w-2xl mx-auto text-lg text-stone-600">深入阿爾貝·加繆的世界，理解人類處境的核心衝突。</p>
+            <blockquote class="mt-8 max-w-3xl mx-auto italic text-xl text-stone-700 border-l-4 border-amber-600 pl-6">
+                「在隆冬，我終於學會了，在我身上有一個不可戰勝的夏天。」
+            </blockquote>
+        </section>
+
+        <section id="concepts" class="mb-24">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-stone-900">核心概念</h2>
+                <p class="mt-2 text-md text-stone-600">加繆的哲學建立在幾個相互關聯的基石之上。點擊下方卡片以了解更多。這部分將幫助您理解構成其思想體系的基本元素。</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+                <div class="md:col-span-4">
+                    <div id="concept-buttons" class="grid grid-cols-2 md:grid-cols-2 gap-4">
+                        <div class="concept-card cursor-pointer p-4 bg-white rounded-lg shadow-sm border-2 border-transparent transition-all duration-300"
+                            data-concept="absurd">
+                            <h3 class="font-bold text-lg text-stone-800">荒謬 (Absurd)</h3>
+                            <p class="text-sm text-stone-500 mt-1">理性與非理性世界的衝突。</p>
+                        </div>
+                        <div class="concept-card cursor-pointer p-4 bg-white rounded-lg shadow-sm border-2 border-transparent transition-all duration-300"
+                            data-concept="revolt">
+                            <h3 class="font-bold text-lg text-stone-800">反抗 (Revolt)</h3>
+                            <p class="text-sm text-stone-500 mt-1">面對荒謬的第一反應。</p>
+                        </div>
+                        <div class="concept-card cursor-pointer p-4 bg-white rounded-lg shadow-sm border-2 border-transparent transition-all duration-300"
+                            data-concept="freedom">
+                            <h3 class="font-bold text-lg text-stone-800">自由 (Freedom)</h3>
+                            <p class="text-sm text-stone-500 mt-1">擺脫傳統價值束縛。</p>
+                        </div>
+                        <div class="concept-card cursor-pointer p-4 bg-white rounded-lg shadow-sm border-2 border-transparent transition-all duration-300"
+                            data-concept="passion">
+                            <h3 class="font-bold text-lg text-stone-800">熱情 (Passion)</h3>
+                            <p class="text-sm text-stone-500 mt-1">盡可能地體驗生命。</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="md:col-span-8">
+                    <div id="concept-display"
+                        class="bg-white p-8 rounded-lg shadow-lg min-h-[250px] transition-opacity duration-500">
+                        <h3 id="concept-title" class="text-2xl font-bold text-amber-700 mb-4"></h3>
+                        <p id="concept-text" class="text-stone-700 leading-relaxed"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="hero" class="mb-24">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-stone-900">荒謬英雄：薛西弗斯</h2>
+                <p class="mt-2 text-md text-stone-600 max-w-3xl mx-auto">
+                    加繆以薛西弗斯的神話來具象化荒謬的處境。薛西弗斯被諸神懲罰，永恆地將巨石推上山頂，而石頭總會滾落。這個互動體驗讓您感受這個永無止境的任務，從而理解荒謬英雄的精髓。</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-lg p-8 max-w-3xl mx-auto">
+                <div class="sisyphus-slope mb-4">
+                    <div id="boulder" class="boulder"></div>
+                </div>
+                <div class="text-center">
+                    <button id="push-button"
+                        class="bg-stone-700 text-white font-bold py-2 px-6 rounded-lg hover:bg-stone-800 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-500">推動巨石</button>
+                    <div id="sisyphus-quote"
+                        class="mt-6 text-stone-600 italic h-10 transition-opacity duration-500 opacity-0"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="works" class="mb-24">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-stone-900">主要著作</h2>
+                <p class="mt-2 text-md text-stone-600">加繆透過小說與散文來闡述他的哲學思想。以下是他最重要的幾部作品，它們從不同角度探討了荒謬、反抗與人性的主題。</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="work-card bg-white p-6 rounded-lg shadow-sm hover:shadow-xl transition-shadow duration-300">
+                    <h3 class="text-xl font-bold text-stone-800">異鄉人 (1942)</h3>
+                    <p class="mt-2 text-stone-600">小說主角莫梭對社會的期望與規範感到疏離，他以誠實面對生命的無意義，最終因拒絕謊言而被判處死刑。本書是荒謬哲學的經典文學體現。</p>
+                </div>
+                <div class="work-card bg-white p-6 rounded-lg shadow-sm hover:shadow-xl transition-shadow duration-300">
+                    <h3 class="text-xl font-bold text-stone-800">薛西弗斯的神話 (1942)</h3>
+                    <p class="mt-2 text-stone-600">這部哲學散文是加繆荒謬思想的核心論述。他在此提出，人應該意識到生命的荒謬性，並以反抗、自由與熱情來擁抱它，而非選擇逃避或絕望。</p>
+                </div>
+                <div class="work-card bg-white p-6 rounded-lg shadow-sm hover:shadow-xl transition-shadow duration-300">
+                    <h3 class="text-xl font-bold text-stone-800">瘟疫 (1947)</h3>
+                    <p class="mt-2 text-stone-600">透過一個被瘟疫圍困的城市，這部小說探討了團結、責任與反抗。醫生里厄與其他市民共同對抗災難，展現了在絕境中人性的光輝與反抗精神。</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="study-notes" class="mb-24">
+            <div class="bg-stone-50 p-8 rounded-lg shadow-inner">
+                <h3 class="text-2xl font-bold text-stone-900 mb-4">延伸學習：薛西弗斯 vs. 愚公移山</h3>
+                <p class="mb-6 text-stone-700">這兩個看似相似的「推石頭」故事，背後隱藏著截然不同的文化與哲學概念。將它們並置對比，能更清楚地看見加繆思想的獨特之處。</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h4 class="text-xl font-bold text-stone-800 mb-2">愚公移山：一個教育性神話</h4>
+                        <p class="mb-4 text-stone-600">這個故事的核心，是透過「只要堅持努力，終將獲得成功」的信念，來教導人們勤奮的美德。但這背後其實隱藏著幾個重要的思考點：</p>
+                        <ul class="list-disc list-inside space-y-2 text-stone-700">
+                            <li><strong>「愚」的標籤：</strong>故事一開始就將愚公定義為「笨」人，這種反諷其實預設了一種價值觀：他的努力之所以有力量，是因為他挑戰了常識，但最終仍舊是為了獲得一個可以被世人認可的結果。
+                            </li>
+                            <li><strong>外部的保證：</strong>愚公的成功並非來自自身，而是來自他人的幫助（子孫）和神靈的干預（天帝）。這暗示了「你的努力不會白費」是外部世界給予的保證。
+                            </li>
+                            <li><strong>結果論的陷阱：</strong>這個神話強調的是「結果」，即只要堅持，最終一定會成功。這與現實生活中，許多努力沒有結果的狀況並不相符。</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-xl font-bold text-amber-700 mb-2">薛西弗斯：一個存在性神話</h4>
+                        <p class="mb-4 text-stone-600">與愚公不同，薛西弗斯的神話毫不修飾地展示了荒謬的本質，沒有任何外部承諾或獎賞，只有純粹的選擇。</p>
+                        <ul class="list-disc list-inside space-y-2 text-stone-700">
+                            <li><strong>沒有保證的荒謬：</strong>薛西弗斯知道巨石最終會滾落，他所有的努力都不會帶來永恆的結果。這就是荒謬本身——人不斷尋求意義，卻永遠在一個無意義的世界裡勞動。
+                            </li>
+                            <li><strong>起心動念的內在化：</strong>薛西弗斯的力量，來自他「選擇」去推動巨石，並且在意識到無意義的瞬間，找到快樂。他的行動不再是為了外部的獎勵，而是為了「反抗」這一無意義的處境。
+                            </li>
+                            <li><strong>「過程」的價值：</strong>對加繆來說，薛西弗斯的價值不在於巨石有沒有停在山頂，而在於他推動巨石的每一個當下。他的堅持並不是為了「延遲兌現」的成功，而是為了證明他自己的選擇、自由與存在本身。
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="comparison" class="mb-12">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-stone-900">荒謬主義 vs. 虛無主義：從無力到力量</h2>
+                <p class="mt-2 text-md text-stone-600">雖然這兩種思想都源於對「人生沒有預設意義」的洞察，但它們得出的結論截然不同。一個走向了絕望，而另一個則找到了力量。</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden relative">
+                <div class="grid grid-cols-1 md:grid-cols-2">
+                    <div class="p-8 border-b md:border-b-0 md:border-r border-stone-200">
+                        <h3 class="text-2xl font-bold text-amber-700 mb-4">虛無主義：無意義的無力感</h3>
+                        <p class="text-stone-700 leading-relaxed mb-4">虛無主義者相信，既然人生沒有任何意義，那麼一切努力和價值都毫無意義。</p>
+                        <p class="text-stone-700 leading-relaxed">
+                            這種思想就像一個巨大的黑洞，吸走所有行動的動機。當你認為「一切都無所謂」時，你可能會感到一種徹底的冷漠與絕望。它否定了所有人類的努力、道德和情感，最終讓你陷入精神上的癱瘓，因為沒有任何事情值得你奮鬥、愛或犧牲。
+                        </p>
+                    </div>
+                    <div class="p-8">
+                        <h3 class="text-2xl font-bold text-stone-800 mb-4">加繆的荒謬主義：在無意義中創造力量</h3>
+                        <p class="text-stone-700 leading-relaxed mb-4">加繆也看到了同樣的無意義，但他拒絕了虛無主義的絕望結論，反而選擇了反抗。</p>
+                        <p class="text-stone-700 leading-relaxed">
+                            對加繆來說，承認人生的荒謬，就是獲得自由的第一步。既然沒有任何事物是預先設定的，那麼我們就能自己決定如何生活。這股力量來自於清醒地意識到生命的無意義，但仍以最大的熱情活下去。這種「反抗」的姿態，讓生命本身成為一種崇高的價值。就像薛西弗斯一樣，雖然他知道巨石會滾落，但他每次推動巨石的努力本身，都充滿了尊嚴與力量。
+                        </p>
+                    </div>
+                </div>
+                <div class="hidden md:block zigzag-divider"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-stone-200">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-sm text-stone-600">
+            <p>此頁面為阿爾貝·加繆哲學思想的互動式學習資源。</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const conceptData = {
+                absurd: {
+                    title: '荒謬 (The Absurd)',
+                    text: '荒謬源於人類對意義、清晰和理性的內在渴求，與這個沉默、非理性和無意義的世界之間的根本衝突。加繆強調，荒謬不是世界本身，也不是人類本身，而是兩者並存時產生的必然關係。就像一個渴望答案的人，卻只能得到宇宙的沉默回應。'
+                },
+                revolt: {
+                    title: '反抗 (Revolt)',
+                    text: '面對荒謬，加繆認為人不應選擇自殺（物理上的逃避）或信仰（哲學上的自殺），而應選擇「反抗」。這種反抗不是政治性的，而是一種形而上的姿態：清醒地意識到生命的荒謬性，但仍然選擇活下去，並直視這個沒有意義的現實。反抗賦予生命價值。'
+                },
+                freedom: {
+                    title: '自由 (Freedom)',
+                    text: '一旦人接受了沒有上帝、沒有既定道德準則、沒有永恆生命的事實，他就獲得了絕對的自由。這種自由不是為所欲為，而是一種心靈上的解放。荒謬的人明白他的行為沒有終極的後果或獎賞，因此他能更真實、更純粹地根據自己的經驗來行動，無需依賴外部的價值體系。'
+                },
+                passion: {
+                    title: '熱情 (Passion)',
+                    text: '在一個沒有永恆意義的生命中，價值的衡量標準不再是「活得更久」，而是「活得更多」。荒謬的人以熱情擁抱生命，致力於窮盡所有可能的經驗。這意味著要以最大的強度和廣度去感受、去愛、去體驗，將生命的每一刻都視為珍貴的，因為除此之外，一無所有。'
+                }
+            };
+
+            const conceptButtons = document.querySelectorAll('.concept-card');
+            const conceptTitle = document.getElementById('concept-title');
+            const conceptText = document.getElementById('concept-text');
+            const conceptDisplay = document.getElementById('concept-display');
+
+            function updateConceptDisplay(conceptKey) {
+                const data = conceptData[conceptKey];
+                conceptDisplay.style.opacity = '0';
+                setTimeout(() => {
+                    conceptTitle.textContent = data.title;
+                    conceptText.textContent = data.text;
+                    conceptDisplay.style.opacity = '1';
+                }, 300);
+
+                conceptButtons.forEach(btn => {
+                    btn.classList.remove('active-concept');
+                });
+                document.querySelector(`[data-concept="${conceptKey}"]`).classList.add('active-concept');
+            }
+
+            conceptButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const conceptKey = button.dataset.concept;
+                    updateConceptDisplay(conceptKey);
+                });
+            });
+
+            updateConceptDisplay('absurd');
+
+            const pushButton = document.getElementById('push-button');
+            const boulder = document.getElementById('boulder');
+            const sisyphusQuote = document.getElementById('sisyphus-quote');
+            let isPushing = false;
+
+            pushButton.addEventListener('click', () => {
+                if (isPushing) return;
+
+                isPushing = true;
+                pushButton.disabled = true;
+                pushButton.textContent = '奮力推動中...';
+                boulder.classList.add('pushing');
+                sisyphusQuote.style.opacity = '0';
+
+                setTimeout(() => {
+                    boulder.classList.remove('pushing');
+                    boulder.classList.add('rolling-down');
+                    sisyphusQuote.textContent = "「對抗峰頂的鬥爭本身，就足以充實人心。」";
+                    sisyphusQuote.style.opacity = '1';
+                }, 4000);
+
+                setTimeout(() => {
+                    boulder.classList.remove('rolling-down');
+                    isPushing = false;
+                    pushButton.disabled = false;
+                    pushButton.textContent = '再次推動巨石';
+                }, 6000);
+            });
+
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        });
+    </script>
+
+</body>
+
+</html>
